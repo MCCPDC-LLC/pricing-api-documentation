@@ -136,7 +136,7 @@
       <!-- Endpoint: GET /pricelist/tcc/search -->
       <section class="doc-section" id="endpoint-tcc-search">
         <h2>GET /pricelist/tcc/search</h2>
-        <p>Search TCC prices by NDC, GPI, or term. Returns only entries with a <code class="inline-code">tcc_channel</code>. Accepts the same query parameters as <code class="inline-code">/pricelist/search</code>, including <code class="inline-code">address</code> for pharmacy geo-lookup.</p>
+        <p>Search TCC prices by NDC, GPI, or term. Returns only entries with a <code class="inline-code">tcc_channel</code>. Accepts the same query parameters as <code class="inline-code">/pricelist/tcc</code>, including <code class="inline-code">address</code> for pharmacy geo-lookup.</p>
 
         <div class="endpoint">
           <div class="endpoint-header">
@@ -326,7 +326,7 @@
       <!-- Example: With Pharmacies -->
       <section class="doc-section" id="example-pharmacy">
         <h2>Example: With Nearby Pharmacies</h2>
-        <p>Same drug when an address is provided to <code class="inline-code">/pricelist/search</code>. The <code class="inline-code">pharmacies</code> array is now populated and sorted by distance.</p>
+        <p>Same drug when an address is provided to <code class="inline-code">/pricelist/tcc/search</code>. The <code class="inline-code">pharmacies</code> array is now populated and sorted by distance.</p>
 
         <div class="code-block">
           <div class="code-block-header">
