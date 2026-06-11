@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TCC API — Cost Plus Drugs Pricing & Network API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    /* TCC accent overrides */
+    .channel-pill.tcc-pill { background: rgba(99,102,241,0.1); color: #3730A3; }
+    .sidebar nav a.active { color: #4338CA; background: rgba(99,102,241,0.08); }
+    .channel-card.tcc-active:hover { border-color: #6366F1; box-shadow: 0 4px 16px rgba(99,102,241,0.12); }
+    .info-box-value.tcc { color: #4338CA; }
+  </style>
+</head>
+<body>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">Rx</div>
+    <div class="nav-logo-text">
+      <span class="brand">Cost Plus Drugs</span>
+      <span class="sub">Pricing &amp; Network API</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="cpd.html">CPD <span class="nav-badge cpd">Mail Order</span></a>
+    <a href="tcc.html" class="active">TCC <span class="nav-badge tcc">Network</span></a>
+    <a href="cpdapn.html">CPDAPN <span class="nav-badge apn">Funded</span></a>
+  </div>
+</nav>
+
+<!-- ── Layout ── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">TCC API</p>
+      <nav>
+        <a href="#overview">Overview</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Endpoints</p>
+      <nav>
+        <a href="#endpoint-list"><span class="method-tag">GET</span> /pricelist/tcc</a>
+        <a href="#endpoint-tcc-search"><span class="method-tag">GET</span> /pricelist/tcc/search</a>
+        <a href="#endpoint-search"><span class="method-tag">GET</span> /pricelist/search</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Schemas</p>
+      <nav>
+        <a href="#schema-tcc-channel">TCC Channel</a>
+        <a href="#schema-pharmacy">Pharmacy</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Examples</p>
+      <nav>
+        <a href="#example-response">Full Response</a>
+        <a href="#example-pharmacy">With Pharmacies</a>
+        <a href="#pricing-formula">Pricing Formulas</a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content-section">
+
+      <!-- Hero -->
+      <header class="page-hero">
+        <div class="channel-pill tcc">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          TCC · Retail Network
+        </div>
+        <h1>TCC API</h1>
+        <p>Team Cuban Card — unfunded retail pharmacy network. Returns pricing, dispensing fees, and optionally nearby TCC pharmacies when a patient address is provided.</p>
+      </header>
+
+      <!-- Overview -->
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p><strong>TCC (Team Cuban Card)</strong> is an unfunded retail pharmacy network. Patients fill their prescriptions at participating local pharmacies at Cost Plus Drugs prices. Unlike CPD, there is no mail-order fulfillment — the patient picks up at a pharmacy.</p>
+        <p>TCC channel data lives in the <code class="inline-code">tcc_channel</code> field on each <a href="index.html#schema-pricelistentry">PriceListEntry</a>. When an address is provided during a search, the <code class="inline-code">tcc_channel.pharmacies</code> array is populated with nearby pharmacies sorted by distance. If no address is provided, <code class="inline-code">pharmacies</code> is omitted.</p>
+
+        <div class="info-box">
+          <div class="info-box-row">
+            <span class="info-box-label">Base URL</span>
+            <span class="info-box-value">https://api.costplusdrugs.com</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Channel field</span>
+            <span class="info-box-value">tcc_channel</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Fulfillment</span>
+            <span class="info-box-value">Retail pharmacy pick-up</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Pharmacy radius</span>
+            <span class="info-box-value">Default 30 miles · max 100 miles · capped at 20 results per drug</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Currency</span>
+            <span class="info-box-value">USD</span>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>If a TCC product is excluded by a pharmacy chain, that chain's locations will not appear in the pharmacy results, even if they are within the search radius.</span>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/tcc -->
+      <section class="doc-section" id="endpoint-list">
+        <h2>GET /pricelist/tcc</h2>
+        <p>Returns the full TCC price list. Only <code class="inline-code">tcc_channel</code> is populated on each entry. The <code class="inline-code">pharmacies</code> array is omitted — use <code class="inline-code">/pricelist/search</code> with an <code class="inline-code">address</code> to include pharmacy locations.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/tcc</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (tcc_channel only, no pharmacies)</div>
+            <p>Supports the <code class="inline-code">exclude_fields</code> parameter. See <a href="index.html#exclude-fields">Exclude Fields</a>.</p>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/tcc</pre>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/tcc/search -->
+      <section class="doc-section" id="endpoint-tcc-search">
+        <h2>GET /pricelist/tcc/search</h2>
+        <p>Search TCC prices by NDC, GPI, or term. Returns only entries with a <code class="inline-code">tcc_channel</code>. Accepts the same query parameters as <code class="inline-code">/pricelist/search</code>, including <code class="inline-code">address</code> for pharmacy geo-lookup.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/tcc/search</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (tcc_channel only)</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — TCC-scoped NDC search with pharmacies</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/tcc/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/search (with address) -->
+      <section class="doc-section" id="endpoint-search">
+        <h2>GET /pricelist/search</h2>
+        <p>Search by NDC or term. When an <code class="inline-code">address</code> is included, <code class="inline-code">tcc_channel.pharmacies</code> is populated with nearby locations sorted by distance.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/search</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[]</div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Provide <strong>at least one</strong> of <code class="inline-code">ndc</code> or <code class="inline-code">term</code>. Adding an <code class="inline-code">address</code> enables pharmacy geo-lookup.</span>
+        </div>
+
+        <h3>Query Parameters</h3>
+        <table class="param-table">
+          <tbody>
+            <tr>
+              <td>
+                <span class="param-name">ndc</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                National Drug Code (with or without dashes). Matches entries where <code class="inline-code">equivalent_ndcs</code> contains the NDC (generic substitution) unless <code class="inline-code">no_substitutions=true</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">no_substitutions</span>
+                <span class="param-type">boolean · optional</span>
+              </td>
+              <td class="param-desc">
+                When <code class="inline-code">true</code>, enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">gpi</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Medispan GPI. Ignored if <code class="inline-code">ndc</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">term</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">strength</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">address</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Patient street address. When provided, populates <code class="inline-code">tcc_channel.pharmacies</code> with nearby TCC pharmacies sorted by ascending distance.<br>
+                Format: <code class="inline-code">street, city, state, zip</code> (e.g., <code class="inline-code">233 S Wacker Dr, Chicago, IL 60606</code>)
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">distance</span>
+                <span class="param-type">number · optional</span>
+              </td>
+              <td class="param-desc">
+                Search radius in miles. Defaults to 30. Maximum 100. Ignored if no <code class="inline-code">address</code> is provided. Pharmacy results are capped at 20 per drug entry.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">exclude_fields</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Comma-separated list of fields to exclude.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Examples</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Term search with nearby pharmacies</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — NDC search with 10-mile pharmacy radius</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606&distance=10"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Exclude TCC pharmacies from response</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=metformin&exclude_fields=tcc_channel.pharmacies"</pre>
+        </div>
+      </section>
+
+      <!-- Schema: TCC Channel -->
+      <section class="doc-section" id="schema-tcc-channel">
+        <h2>Schema: TCC Channel</h2>
+        <p>The <code class="inline-code">tcc_channel</code> object returned on each <code class="inline-code">PriceListEntry</code>. All monetary values are in USD. <code class="inline-code">pharmacies</code> is only present when an <code class="inline-code">address</code> is supplied to search.</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">price_per_unit</td>
+              <td><span class="field-type">string</span></td>
+              <td>USD per unit inclusive of CPD markup, formatted to 5 decimal places (e.g., <code class="inline-code">"0.06667"</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">pharmacy_dispensing_fee</td>
+              <td><span class="field-type">number</span></td>
+              <td>Standard TCC dispensing fee (USD). Some chains (e.g., Walgreens) have a different fee — see <code class="inline-code">pharmacies[].pharmacy_dispensing_fee</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">currency</td>
+              <td><span class="field-type">"USD"</span></td>
+              <td>Always <code class="inline-code">"USD"</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">admin_fee</td>
+              <td><span class="field-type">number</span></td>
+              <td>Admin fee (USD). Included in <code class="inline-code">sample_pack_price_w_dispensing</code>. Not present on the CPDAPN channel.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price</td>
+              <td><span class="field-type">number</span></td>
+              <td><code class="inline-code">price_per_unit × pack_size × ndc_count</code></td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_w_dispensing</td>
+              <td><span class="field-type">number</span></td>
+              <td><code class="inline-code">sample_pack_price + pharmacy_dispensing_fee + admin_fee</code></td>
+            </tr>
+            <tr>
+              <td class="field-name">pharmacies</td>
+              <td><span class="field-type">Pharmacy[] | omitted</span></td>
+              <td>Nearby pharmacies. <strong>Only present when <code class="inline-code">address</code> is provided.</strong> Capped at 20 results. Sorted by ascending distance. Pharmacies that exclude this specific TCC product are filtered out.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Schema: Pharmacy -->
+      <section class="doc-section" id="schema-pharmacy">
+        <h2>Schema: Pharmacy</h2>
+        <p>One entry per participating pharmacy within the search radius, nested under <code class="inline-code">tcc_channel.pharmacies</code>.</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">name</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Pharmacy name (e.g., <code class="inline-code">Walgreens</code>, <code class="inline-code">Community Pharmacy</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">npi</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>National Provider Identifier.</td>
+            </tr>
+            <tr>
+              <td class="field-name">chain_code</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>Chain code if the pharmacy is part of a chain.</td>
+            </tr>
+            <tr>
+              <td class="field-name">address</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Full pharmacy address.</td>
+            </tr>
+            <tr>
+              <td class="field-name">distance</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Approximate miles from the search address, formatted to 2 decimal places (e.g., <code class="inline-code">"0.60"</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">pharmacy_dispensing_fee</td>
+              <td><span class="field-type">number</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Chain-specific dispensing fee. For most pharmacies this equals <code class="inline-code">tcc_channel.pharmacy_dispensing_fee</code>; some chains (e.g., Walgreens) may differ.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_w_dispensing</td>
+              <td><span class="field-type">number</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Total cost at this specific pharmacy using its own dispensing fee. Always use this field for patient-facing price display.</td>
+            </tr>
+            <tr>
+              <td class="field-name">address_obj</td>
+              <td><span class="field-type">object</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Structured address. Fields: <code class="inline-code">line</code>, <code class="inline-code">line2</code>, <code class="inline-code">city</code>, <code class="inline-code">state</code>, <code class="inline-code">postal_code</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">chain</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Chain name identifier (e.g., <code class="inline-code">"WAG"</code> for Walgreens).</td>
+            </tr>
+            <tr>
+              <td class="field-name">phone_number</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Pharmacy phone number.</td>
+            </tr>
+            <tr>
+              <td class="field-name">effective_date</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Network effective date for this pharmacy location.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Example: Full Response -->
+      <section class="doc-section" id="example-response">
+        <h2>Example: Full TCC Response</h2>
+        <p>Sample <code class="inline-code">tcc_channel</code> as returned from <code class="inline-code">/pricelist/tcc</code> (no address provided, so <code class="inline-code">pharmacies</code> is omitted).</p>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>{
+  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"942206fffceea95d4c8393c77ea617ab"</span>,
+  <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
+  <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
+  <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
+  <span class="tok-key">"pack_size"</span>: <span class="tok-num">90</span>,
+  <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
+  <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
+  <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
+  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 tablets"</span>,
+  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"tcc_channel"</span>: {
+    <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.06667"</span>,
+    <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+    <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
+    <span class="tok-key">"admin_fee"</span>: <span class="tok-num">1</span>,
+    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">1.80</span>,
+    <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.80</span>
+  }
+}</pre>
+        </div>
+      </section>
+
+      <!-- Example: With Pharmacies -->
+      <section class="doc-section" id="example-pharmacy">
+        <h2>Example: With Nearby Pharmacies</h2>
+        <p>Same drug when an address is provided to <code class="inline-code">/pricelist/search</code>. The <code class="inline-code">pharmacies</code> array is now populated and sorted by distance.</p>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON — tcc_channel (with pharmacies)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><span class="tok-key">"tcc_channel"</span>: {
+  <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.06667"</span>,
+  <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+  <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
+  <span class="tok-key">"admin_fee"</span>: <span class="tok-num">1</span>,
+  <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">1.80</span>,
+  <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.80</span>,
+  <span class="tok-key">"pharmacies"</span>: [
+    {
+      <span class="tok-key">"name"</span>: <span class="tok-str">"Walgreens"</span>,
+      <span class="tok-key">"npi"</span>: <span class="tok-str">"1234567890"</span>,
+      <span class="tok-key">"chain"</span>: <span class="tok-str">"WAG"</span>,
+      <span class="tok-key">"chain_code"</span>: <span class="tok-str">"WAG"</span>,
+      <span class="tok-key">"address"</span>: <span class="tok-str">"151 N State St, Chicago, IL 60601"</span>,
+      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"151 N State St"</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60601"</span> },
+      <span class="tok-key">"distance"</span>: <span class="tok-str">"0.60"</span>,
+      <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">14.05</span>,
+      <span class="tok-key">"phone_number"</span>: <span class="tok-str">"312-555-0100"</span>,
+      <span class="tok-key">"effective_date"</span>: <span class="tok-str">"2024-01-01"</span>,
+      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">15.85</span>
+    },
+    {
+      <span class="tok-key">"name"</span>: <span class="tok-str">"Community Pharmacy"</span>,
+      <span class="tok-key">"npi"</span>: <span class="tok-str">"9876543210"</span>,
+      <span class="tok-key">"address"</span>: <span class="tok-str">"200 W Madison St, Chicago, IL 60606"</span>,
+      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"200 W Madison St"</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60606"</span> },
+      <span class="tok-key">"distance"</span>: <span class="tok-str">"1.70"</span>,
+      <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.80</span>
+    }
+  ]
+}</pre>
+        </div>
+
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Always use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> — not <code class="inline-code">tcc_channel.sample_pack_price_w_dispensing</code> — for pharmacy-specific pricing displayed to a patient. Chain pharmacies like Walgreens may have different dispensing fees than the standard TCC rate.</span>
+        </div>
+      </section>
+
+      <!-- Pricing Formula -->
+      <section class="doc-section" id="pricing-formula">
+        <h2>Pricing Formulas</h2>
+
+        <h3>Standard TCC Total</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">Formula</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>patient_total = (sample_pack_size × price_per_unit)
+              + pharmacy_dispensing_fee
+              + admin_fee</pre>
+        </div>
+
+        <h3>Chain-Specific Total</h3>
+        <p>When displaying pricing at a specific pharmacy, substitute that pharmacy's fee:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">Formula</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>patient_total_at_chain = (sample_pack_size × price_per_unit)
+                        + pharmacies[i].pharmacy_dispensing_fee
+                        + admin_fee
+
+<span class="tok-cmd"># Or use the pre-computed field directly:</span>
+patient_total_at_chain = pharmacies[i].sample_pack_price_w_dispensing</pre>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <span>© 2025 Cost Plus Drugs · <a href="https://costplusdrugs.com" target="_blank" rel="noopener">costplusdrugs.com</a></span>
+  <span>
+    <a href="index.html">Overview</a> ·
+    <a href="cpd.html">CPD</a> ·
+    <a href="tcc.html">TCC</a> ·
+    <a href="cpdapn.html">CPDAPN</a>
+  </span>
+</footer>
+
+<script src="assets/script.js"></script>
+</body>
+</html>

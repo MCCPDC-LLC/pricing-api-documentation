@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CPD API — Cost Plus Drugs Pricing & Network API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">Rx</div>
+    <div class="nav-logo-text">
+      <span class="brand">Cost Plus Drugs</span>
+      <span class="sub">Pricing &amp; Network API</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="cpd.html" class="active">CPD <span class="nav-badge cpd">Mail Order</span></a>
+    <a href="tcc.html">TCC <span class="nav-badge tcc">Network</span></a>
+    <a href="cpdapn.html">CPDAPN <span class="nav-badge apn">Funded</span></a>
+  </div>
+</nav>
+
+<!-- ── Layout ── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">CPD API</p>
+      <nav>
+        <a href="#overview">Overview</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Endpoints</p>
+      <nav>
+        <a href="#endpoint-list"><span class="method-tag">GET</span> /pricelist/cpd</a>
+        <a href="#endpoint-search"><span class="method-tag">GET</span> /pricelist/cpd/search</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Schemas</p>
+      <nav>
+        <a href="#schema-cpd-channel">CPD Channel</a>
+        <a href="#schema-sampleprice">SamplePricing</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Examples</p>
+      <nav>
+        <a href="#example-response">Full Response</a>
+        <a href="#example-cash">Cash Pricing</a>
+        <a href="#example-insurance">Insurance Pricing</a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content-section">
+
+      <!-- Hero -->
+      <header class="page-hero">
+        <div class="channel-pill cpd">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          CPD · Mail Order
+        </div>
+        <h1>CPD API</h1>
+        <p>Direct-to-Consumer mail-order pharmacy pricing. Returns cash and insurance pricing, dispensing fees, shipping costs, and inventory availability for drugs fulfilled by Cost Plus Drugs' mail-order pharmacy.</p>
+      </header>
+
+      <!-- Overview -->
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p><strong>CPD (Cost Plus Drugs)</strong> is the mail-order direct-to-consumer channel. Patients order online and receive medications shipped to their door. Pricing includes both cash and insurance tracks.</p>
+        <p>CPD channel data is returned in the <code class="inline-code">cpd_channel</code> field on each <a href="index.html#schema-pricelistentry">PriceListEntry</a>. This field is <code class="inline-code">null</code> for items not available on the CPD channel.</p>
+
+        <div class="info-box">
+          <div class="info-box-row">
+            <span class="info-box-label">Base URL</span>
+            <span class="info-box-value">https://api.costplusdrugs.com</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Channel field</span>
+            <span class="info-box-value">cpd_channel</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Fulfillment</span>
+            <span class="info-box-value">Mail order · ships to patient</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Currency</span>
+            <span class="info-box-value">USD</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/cpd -->
+      <section class="doc-section" id="endpoint-list">
+        <h2>GET /pricelist/cpd</h2>
+        <p>Returns the full CPD price list. Only <code class="inline-code">cpd_channel</code> is populated on each entry; <code class="inline-code">tcc_channel</code> and <code class="inline-code">cpdapn_channel</code> are omitted.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/cpd</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (cpd_channel only)</div>
+            <p>Supports the <code class="inline-code">exclude_fields</code> parameter. See <a href="index.html#exclude-fields">Exclude Fields</a>.</p>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/cpd</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Exclude insurance fields</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd?exclude_fields=cpd_channel.insurance_dispensing_fee,cpd_channel.insurance_shipping_cost,cpd_channel.insurance_expedited_shipping_cost"</pre>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/cpd/search -->
+      <section class="doc-section" id="endpoint-search">
+        <h2>GET /pricelist/cpd/search</h2>
+        <p>Search the CPD price list by NDC or term. Returns only entries available on the CPD channel.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/cpd/search</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (cpd_channel only)</div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Provide <strong>at least one</strong> of <code class="inline-code">ndc</code> or <code class="inline-code">term</code>.</span>
+        </div>
+
+        <h3>Query Parameters</h3>
+        <table class="param-table">
+          <tbody>
+            <tr>
+              <td>
+                <span class="param-name">ndc</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                National Drug Code (with or without dashes). By default matches entries where <code class="inline-code">equivalent_ndcs</code> contains the NDC (generic substitution). Pair with <code class="inline-code">no_substitutions=true</code> for exact matching.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">no_substitutions</span>
+                <span class="param-type">boolean · optional</span>
+              </td>
+              <td class="param-desc">
+                When <code class="inline-code">true</code>, enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>; returns <code class="inline-code">400</code> otherwise.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">gpi</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Medispan GPI (with or without dashes). Ignored if <code class="inline-code">ndc</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">term</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">strength</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">exclude_fields</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Comma-separated list of fields to exclude from the response.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Examples</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Generic-equivalent by NDC</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=00093-7424-56"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Exact NDC, mail order only</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=00093-7424-56&no_substitutions=true"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Term + strength</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?term=atorvastatin&strength=20mg"</pre>
+        </div>
+      </section>
+
+      <!-- Schema: CPD Channel -->
+      <section class="doc-section" id="schema-cpd-channel">
+        <h2>Schema: CPD Channel</h2>
+        <p>The <code class="inline-code">cpd_channel</code> object returned on each <code class="inline-code">PriceListEntry</code>. All monetary values are in USD.</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">cash_dispensing_fee</td>
+              <td><span class="field-type">number</span></td>
+              <td>Dispensing fee for cash-pay orders (USD).</td>
+            </tr>
+            <tr>
+              <td class="field-name">insurance_dispensing_fee</td>
+              <td><span class="field-type">number</span></td>
+              <td>Dispensing fee for insurance orders (USD).</td>
+            </tr>
+            <tr>
+              <td class="field-name">cash_shipping_cost</td>
+              <td><span class="field-type">number</span></td>
+              <td>Standard shipping cost for 1 medication, cash-pay (USD).</td>
+            </tr>
+            <tr>
+              <td class="field-name">cash_expedited_shipping_cost</td>
+              <td><span class="field-type">number</span></td>
+              <td>Expedited shipping cost for 1 medication, cash-pay (USD).</td>
+            </tr>
+            <tr>
+              <td class="field-name">insurance_shipping_cost</td>
+              <td><span class="field-type">number</span></td>
+              <td>Standard shipping cost for 1 medication, insurance (USD).</td>
+            </tr>
+            <tr>
+              <td class="field-name">insurance_expedited_shipping_cost</td>
+              <td><span class="field-type">number</span></td>
+              <td>Expedited shipping cost for 1 medication, insurance (USD).</td>
+            </tr>
+            <tr>
+              <td class="field-name">insurance_eligible</td>
+              <td><span class="field-type">boolean</span></td>
+              <td><code class="inline-code">true</code> if the drug is eligible for insurance billing.</td>
+            </tr>
+            <tr>
+              <td class="field-name">currency</td>
+              <td><span class="field-type">"USD"</span></td>
+              <td>Always <code class="inline-code">"USD"</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">in_stock</td>
+              <td><span class="field-type">boolean</span></td>
+              <td>Current inventory availability.</td>
+            </tr>
+            <tr>
+              <td class="field-name">price_per_unit</td>
+              <td><span class="field-type">number</span></td>
+              <td>USD per unit, inclusive of CPD markup.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_size × price_per_unit</code>, formatted to 2 decimal places (e.g., <code class="inline-code">"2.10"</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_total_to_patient_without_shipping</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_price + dispensing_fee</code>, formatted to 2 decimal places.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_w_shipping_dispensing</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_price + shipping_cost + dispensing_fee</code>, formatted to 2 decimal places. Top-level only — not repeated inside each <code class="inline-code">sample_pricing</code> entry.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pricing</td>
+              <td><span class="field-type">SamplePricing[]</span></td>
+              <td>Pricing for 3 dispense quantities: 1×, 2×, and 3× the default sample size (typically 30/60/90 for pills; 1/2/3 for non-pills).</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Schema: SamplePricing -->
+      <section class="doc-section" id="schema-sampleprice">
+        <h2>Schema: SamplePricing</h2>
+        <p>Three entries nested under <code class="inline-code">cpd_channel.sample_pricing</code>, representing 1×, 2×, and 3× the default sample pack size. All price fields are <strong>decimal strings</strong>, not raw numbers.</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">sample_pack_size</td>
+              <td><span class="field-type">string</span></td>
+              <td>e.g., <code class="inline-code">"30 count"</code>, <code class="inline-code">"60 count"</code>, <code class="inline-code">"1 Tablet"</code></td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_size × price_per_unit</code>, formatted to 2 decimal places.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_total_to_patient_without_shipping</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_price + dispensing_fee</code>, formatted to 2 decimal places.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span><code class="inline-code">sample_pack_price_w_shipping_dispensing</code> (including shipping) is on the top-level <code class="inline-code">cpd_channel</code> object for the default pack size only — it does <strong>not</strong> appear inside each <code class="inline-code">sample_pricing</code> entry.</span>
+        </div>
+      </section>
+
+      <!-- Examples -->
+      <section class="doc-section" id="example-response">
+        <h2>Example: Full CPD Response</h2>
+        <p>Sample <code class="inline-code">PriceListEntry</code> as returned from <code class="inline-code">/pricelist/cpd</code>.</p>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>{
+  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"942206fffceea95d4c8393c77ea617ab"</span>,
+  <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
+  <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
+  <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
+  <span class="tok-key">"pack_size"</span>: <span class="tok-num">90</span>,
+  <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
+  <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
+  <span class="tok-key">"special_handling"</span>: <span class="tok-null">null</span>,
+  <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
+  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 tablets"</span>,
+  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"cpd_channel"</span>: {
+    <span class="tok-key">"cash_dispensing_fee"</span>: <span class="tok-num">5</span>,
+    <span class="tok-key">"insurance_dispensing_fee"</span>: <span class="tok-num">5</span>,
+    <span class="tok-key">"cash_shipping_cost"</span>: <span class="tok-num">5.25</span>,
+    <span class="tok-key">"cash_expedited_shipping_cost"</span>: <span class="tok-num">15</span>,
+    <span class="tok-key">"insurance_shipping_cost"</span>: <span class="tok-num">4</span>,
+    <span class="tok-key">"insurance_expedited_shipping_cost"</span>: <span class="tok-num">15</span>,
+    <span class="tok-key">"insurance_eligible"</span>: <span class="tok-bool">true</span>,
+    <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
+    <span class="tok-key">"in_stock"</span>: <span class="tok-bool">true</span>,
+    <span class="tok-key">"price_per_unit"</span>: <span class="tok-num">0.07</span>,
+    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"2.10"</span>,
+    <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"7.10"</span>,
+    <span class="tok-key">"sample_pack_price_w_shipping_dispensing"</span>: <span class="tok-str">"12.35"</span>,
+    <span class="tok-key">"sample_pricing"</span>: [
+      {
+        <span class="tok-key">"sample_pack_size"</span>: <span class="tok-str">"30 count"</span>,
+        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"2.10"</span>,
+        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"7.10"</span>
+      },
+      {
+        <span class="tok-key">"sample_pack_size"</span>: <span class="tok-str">"60 count"</span>,
+        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"4.20"</span>,
+        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"9.20"</span>
+      },
+      {
+        <span class="tok-key">"sample_pack_size"</span>: <span class="tok-str">"90 count"</span>,
+        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"6.30"</span>,
+        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"11.30"</span>
+      }
+    ]
+  }
+}</pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="example-cash">
+        <h2>Pricing Formulas: Cash</h2>
+        <p>For cash-pay patients, the total cost to the patient for a standard fill is:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">Formula</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>patient_total = (sample_pack_size × price_per_unit)
+              + cash_dispensing_fee      <span class="tok-cmd">// $5 standard · $15 cold-chain</span>
+              + cash_shipping_cost       <span class="tok-cmd">// $5.25 standard · $55 cold-chain</span></pre>
+        </div>
+        <p>This is pre-computed in <code class="inline-code">cpd_channel.sample_pack_price_w_shipping_dispensing</code> for the default <code class="inline-code">sample_pack_size</code> only. Per-quantity totals without shipping are in <code class="inline-code">sample_pricing[].sample_pack_price_total_to_patient_without_shipping</code>.</p>
+      </section>
+
+      <section class="doc-section" id="example-insurance">
+        <h2>Pricing Formulas: Insurance</h2>
+        <p>For insurance-eligible drugs, use the insurance track fields:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">Formula</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>patient_total = (sample_pack_size × price_per_unit)
+              + insurance_dispensing_fee      <span class="tok-cmd">// $5 standard · $10 cold-chain</span>
+              + insurance_shipping_cost       <span class="tok-cmd">// $4 standard · $55 cold-chain</span></pre>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Check <code class="inline-code">cpd_channel.insurance_eligible</code> before presenting insurance pricing. If <code class="inline-code">false</code>, the drug can only be dispensed on the cash track.</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <span>© 2025 Cost Plus Drugs · <a href="https://costplusdrugs.com" target="_blank" rel="noopener">costplusdrugs.com</a></span>
+  <span>
+    <a href="index.html">Overview</a> ·
+    <a href="cpd.html">CPD</a> ·
+    <a href="tcc.html">TCC</a> ·
+    <a href="cpdapn.html">CPDAPN</a>
+  </span>
+</footer>
+
+<script src="assets/script.js"></script>
+</body>
+</html>

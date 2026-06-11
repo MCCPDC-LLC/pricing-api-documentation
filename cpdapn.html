@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CPDAPN API — Cost Plus Drugs Pricing & Network API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    /* CPDAPN amber accent overrides */
+    .sidebar nav a.active { color: #92400E; background: rgba(245,158,11,0.08); }
+  </style>
+</head>
+<body>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">Rx</div>
+    <div class="nav-logo-text">
+      <span class="brand">Cost Plus Drugs</span>
+      <span class="sub">Pricing &amp; Network API</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="cpd.html">CPD <span class="nav-badge cpd">Mail Order</span></a>
+    <a href="tcc.html">TCC <span class="nav-badge tcc">Network</span></a>
+    <a href="cpdapn.html" class="active">CPDAPN <span class="nav-badge apn">Funded</span></a>
+  </div>
+</nav>
+
+<!-- ── Layout ── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">CPDAPN API</p>
+      <nav>
+        <a href="#overview">Overview</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Endpoints</p>
+      <nav>
+        <a href="#endpoint-list"><span class="method-tag">GET</span> /pricelist/cpdapn</a>
+        <a href="#endpoint-cpdapn-search"><span class="method-tag">GET</span> /pricelist/cpdapn/search</a>
+        <a href="#endpoint-search"><span class="method-tag">GET</span> /pricelist/search</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Schemas</p>
+      <nav>
+        <a href="#schema-cpdapn-channel">CPDAPN Channel</a>
+        <a href="#schema-pricelistentry">PriceListEntry</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Examples</p>
+      <nav>
+        <a href="#example-response">Response Example</a>
+        <a href="#example-curls">Quick Reference</a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content-section">
+
+      <!-- Hero -->
+      <header class="page-hero">
+        <div class="channel-pill apn">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          CPDAPN · Funded Network
+        </div>
+        <h1>CPDAPN API</h1>
+        <p>Funded and leased business pricing for PBMs and commercial payers. Returns the CPDAPN price list for integrators operating under a funded network arrangement with Cost Plus Drugs.</p>
+      </header>
+
+      <!-- Overview -->
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p><strong>CPDAPN (Cost Plus Drugs Access Pharmacy Network)</strong> is the funded / leased business channel for PBMs and commercial payers. Unlike CPD (mail order) and TCC (unfunded retail), CPDAPN pricing is structured for funded benefit plan arrangements.</p>
+        <p>CPDAPN channel data lives in the <code class="inline-code">cpdapn_channel</code> field on each <a href="index.html#schema-pricelistentry">PriceListEntry</a>. This field is <code class="inline-code">null</code> for items not available on the CPDAPN channel.</p>
+
+        <div class="info-box">
+          <div class="info-box-row">
+            <span class="info-box-label">Base URL</span>
+            <span class="info-box-value">https://api.costplusdrugs.com</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Channel field</span>
+            <span class="info-box-value">cpdapn_channel</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Use case</span>
+            <span class="info-box-value">PBMs · Commercial payers · Funded plans</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Currency</span>
+            <span class="info-box-value">USD</span>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>The CPDAPN channel is intended for integrators operating under a funded network agreement. Contact Cost Plus Drugs if you need information about CPDAPN access or contracting.</span>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/cpdapn -->
+      <section class="doc-section" id="endpoint-list">
+        <h2>GET /pricelist/cpdapn</h2>
+        <p>Returns the full CPDAPN price list. Only <code class="inline-code">cpdapn_channel</code> is populated on each entry; <code class="inline-code">cpd_channel</code> and <code class="inline-code">tcc_channel</code> are omitted.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/cpdapn</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (cpdapn_channel only)</div>
+            <p>Supports the <code class="inline-code">exclude_fields</code> parameter. See <a href="index.html#exclude-fields">Exclude Fields</a>.</p>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/cpdapn</pre>
+        </div>
+      </section>
+
+      <!-- Endpoint: GET /pricelist/cpdapn/search -->
+      <section class="doc-section" id="endpoint-cpdapn-search">
+        <h2>GET /pricelist/cpdapn/search</h2>
+        <p>Search the CPDAPN price list by NDC, GPI, or term. Returns only entries with a <code class="inline-code">cpdapn_channel</code>. Supports the same parameters as <code class="inline-code">/pricelist/search</code>, including <code class="inline-code">address</code> for nearby funded-network pharmacy lookup.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/cpdapn/search</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (cpdapn_channel only)</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — CPDAPN-scoped search with pharmacy lookup</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>When an address is provided, <code class="inline-code">cpdapn_channel.pharmacies</code> is populated with nearby <strong>funded-network</strong> pharmacies (distinct from TCC unfunded pharmacies). Results are capped at 20 per drug entry, max 100-mile radius.</span>
+        </div>
+      </section>
+
+      <!-- Endpoint: Search -->
+      <section class="doc-section" id="endpoint-search">
+        <h2>GET /pricelist/search</h2>
+        <p>Search across all channels by NDC, GPI, or term. The <code class="inline-code">cpdapn_channel</code> field is populated when a matching CPDAPN entry exists.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/search</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[]</div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Provide <strong>at least one</strong> of <code class="inline-code">ndc</code> or <code class="inline-code">term</code>. See the <a href="index.html#endpoint-search">full search parameter reference</a> on the Overview page.</span>
+        </div>
+
+        <h3>Query Parameters</h3>
+        <table class="param-table">
+          <tbody>
+            <tr>
+              <td>
+                <span class="param-name">ndc</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                National Drug Code (with or without dashes). Matches via <code class="inline-code">equivalent_ndcs</code> by default; use <code class="inline-code">no_substitutions=true</code> for exact matching.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">no_substitutions</span>
+                <span class="param-type">boolean · optional</span>
+              </td>
+              <td class="param-desc">
+                Enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">gpi</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Medispan GPI (with or without dashes). Ignored if <code class="inline-code">ndc</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">term</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">strength</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">address</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Street address to populate <code class="inline-code">cpdapn_channel.pharmacies</code> with nearby funded-network pharmacies. Format: <code class="inline-code">street, city, state, zip</code> or zip code alone.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">distance</span>
+                <span class="param-type">number · optional</span>
+              </td>
+              <td class="param-desc">
+                Search radius in miles. Defaults to 30. Maximum 100. Ignored if no <code class="inline-code">address</code> is provided. Results capped at 20 pharmacies per drug entry.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">exclude_fields</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Comma-separated list of fields to exclude from the response.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Examples</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Search by NDC</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Search by GPI</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?gpi=3900003010-2020"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Search by term, CPDAPN channel only</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=metformin&exclude_fields=cpd_channel,tcc_channel"</pre>
+        </div>
+      </section>
+
+      <!-- Schema: CPDAPN Channel -->
+      <section class="doc-section" id="schema-cpdapn-channel">
+        <h2>Schema: CPDAPN Channel</h2>
+        <p>The <code class="inline-code">cpdapn_channel</code> object returned on each <code class="inline-code">PriceListEntry</code>. Structurally identical to the TCC channel except <strong>there is no <code class="inline-code">admin_fee</code></strong> and <code class="inline-code">sample_pack_price_w_dispensing</code> is calculated without it. All monetary values are in USD.</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">price_per_unit</td>
+              <td><span class="field-type">string</span></td>
+              <td>USD per unit inclusive of CPD markup, formatted to 5 decimal places (e.g., <code class="inline-code">"0.06667"</code>). Use as the ingredient cost basis for PBM adjudication.</td>
+            </tr>
+            <tr>
+              <td class="field-name">pharmacy_dispensing_fee</td>
+              <td><span class="field-type">number</span></td>
+              <td>Standard CPDAPN dispensing fee (USD). May vary by chain — see <code class="inline-code">pharmacies[].pharmacy_dispensing_fee</code> for chain-specific values.</td>
+            </tr>
+            <tr>
+              <td class="field-name">currency</td>
+              <td><span class="field-type">"USD"</span></td>
+              <td>Always <code class="inline-code">"USD"</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price</td>
+              <td><span class="field-type">number</span></td>
+              <td><code class="inline-code">price_per_unit × pack_size × ndc_count</code></td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_w_dispensing</td>
+              <td><span class="field-type">number</span></td>
+              <td><code class="inline-code">sample_pack_price + pharmacy_dispensing_fee</code> — <strong>no admin fee</strong>, unlike the TCC channel.</td>
+            </tr>
+            <tr>
+              <td class="field-name">pharmacies</td>
+              <td><span class="field-type">Pharmacy[] | omitted</span></td>
+              <td>Nearby funded-network pharmacies. Present only when <code class="inline-code">address</code> is provided to a search endpoint. Capped at 20 results. See <a href="tcc.html#schema-pharmacy">Pharmacy schema</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Dispensing fees and other adjudication components beyond those returned here are governed by your specific network contract.</span>
+        </div>
+      </section>
+
+      <!-- Schema: PriceListEntry reference -->
+      <section class="doc-section" id="schema-pricelistentry">
+        <h2>Base Schema: PriceListEntry</h2>
+        <p>The CPDAPN channel is returned alongside the standard <code class="inline-code">PriceListEntry</code> base fields. See the <a href="index.html#schema-pricelistentry">full PriceListEntry schema</a> on the Overview page for all base fields including <code class="inline-code">equivalent_ndcs</code>, <code class="inline-code">medication_name</code>, <code class="inline-code">strength</code>, and more.</p>
+
+        <p>Key fields relevant to CPDAPN integrators:</p>
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">external_sku</td>
+              <td><span class="field-type">string</span></td>
+              <td>Stable external product identifier for cross-referencing.</td>
+            </tr>
+            <tr>
+              <td class="field-name">equivalent_ndcs</td>
+              <td><span class="field-type">string[]</span></td>
+              <td>All NDCs for which a generic equivalent can be provided. Used for claim matching without DAW=1.</td>
+            </tr>
+            <tr>
+              <td class="field-name">pack_size</td>
+              <td><span class="field-type">number</span></td>
+              <td>NDC package size from Medi-Span. Basis for quantity dispensed calculations.</td>
+            </tr>
+            <tr>
+              <td class="field-name">splittable</td>
+              <td><span class="field-type">boolean</span></td>
+              <td>Whether the pharmacy can dispense partial pack sizes.</td>
+            </tr>
+            <tr>
+              <td class="field-name">cpdapn_channel</td>
+              <td><span class="field-type">object | null</span></td>
+              <td>CPDAPN pricing. <code class="inline-code">null</code> if this drug is not available on the funded network.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Example Response -->
+      <section class="doc-section" id="example-response">
+        <h2>Example: CPDAPN Response</h2>
+        <p>Sample <code class="inline-code">PriceListEntry</code> as returned from <code class="inline-code">/pricelist/cpdapn</code>.</p>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>{
+  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"942206fffceea95d4c8393c77ea617ab"</span>,
+  <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
+  <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
+  <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
+  <span class="tok-key">"pack_size"</span>: <span class="tok-num">90</span>,
+  <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
+  <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
+  <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
+  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"cpdapn_channel"</span>: {
+    <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.06667"</span>,
+    <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+    <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
+    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">1.80</span>,
+    <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.80</span>
+  }
+}</pre>
+        </div>
+      </section>
+
+      <!-- Quick Reference -->
+      <section class="doc-section" id="example-curls">
+        <h2>Quick Reference</h2>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Full CPDAPN price list</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/cpdapn</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Search by NDC (generic equivalent)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Exact NDC (DAW=1 equivalent)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56&no_substitutions=true"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — All channels (CPD + TCC only; CPDAPN excluded)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/all</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — All funded-network pharmacies near a zip code</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pharmacies/cpdapn?address=60606&distance=25"</pre>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <span>© 2025 Cost Plus Drugs · <a href="https://costplusdrugs.com" target="_blank" rel="noopener">costplusdrugs.com</a></span>
+  <span>
+    <a href="index.html">Overview</a> ·
+    <a href="cpd.html">CPD</a> ·
+    <a href="tcc.html">TCC</a> ·
+    <a href="cpdapn.html">CPDAPN</a>
+  </span>
+</footer>
+
+<script src="assets/script.js"></script>
+</body>
+</html>

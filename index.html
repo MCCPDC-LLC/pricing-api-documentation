@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cost Plus Drugs — Pricing & Network API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">Rx</div>
+    <div class="nav-logo-text">
+      <span class="brand">Cost Plus Drugs</span>
+      <span class="sub">Pricing &amp; Network API</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="cpd.html">CPD <span class="nav-badge cpd">Mail Order</span></a>
+    <a href="tcc.html">TCC <span class="nav-badge tcc">Network</span></a>
+    <a href="cpdapn.html">CPDAPN <span class="nav-badge apn">Funded</span></a>
+  </div>
+</nav>
+
+<!-- ── Layout ── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Getting Started</p>
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#server">Server &amp; Auth</a>
+        <a href="#channels">Channels</a>
+        <a href="#exclude-fields">Exclude Fields</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Endpoints</p>
+      <nav>
+        <a href="#endpoint-all"><span class="method-tag">GET</span> /pricelist/all</a>
+        <a href="#endpoint-search"><span class="method-tag">GET</span> /pricelist/search</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Schemas</p>
+      <nav>
+        <a href="#schema-pricelistentry">PriceListEntry</a>
+        <a href="#schema-sampleprice">SamplePricing</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Business Rules</p>
+      <nav>
+        <a href="#business-rules">Rules</a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content-section">
+
+      <!-- Hero -->
+      <header class="page-hero">
+        <div class="channel-pill all">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          API Reference
+        </div>
+        <h1>Pricing &amp; Network API</h1>
+        <p>Read-only endpoints for retrieving Direct-to-Consumer (CPD) and Team Cuban Card (TCC)
+        price lists and searching by NDC or term, optionally localized by address for nearby pharmacies.</p>
+      </header>
+
+      <!-- Overview -->
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p>The Cost Plus Drugs Pricing and Network API provides programmatic access to our current drug price lists across three distribution channels. All endpoints are read-only and return JSON.</p>
+        <p>Use this API to:</p>
+        <ul>
+          <li>Retrieve the full price list for any channel</li>
+          <li>Search by NDC (with or without generic substitutions), GPI, or drug name</li>
+          <li>Locate nearby TCC or CPDAPN pharmacies given a patient address</li>
+          <li>Fetch a single entry by <code class="inline-code">external_sku</code></li>
+        </ul>
+      </section>
+
+      <!-- Server & Auth -->
+      <section class="doc-section" id="server">
+        <h2>Server &amp; Authentication</h2>
+        <div class="info-box">
+          <div class="info-box-row">
+            <span class="info-box-label">Base URL</span>
+            <span class="info-box-value">https://api.costplusdrugs.com</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Protocol</span>
+            <span class="info-box-value">HTTPS only</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Authentication</span>
+            <span class="info-box-value">None required</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Response format</span>
+            <span class="info-box-value">application/json</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Channels -->
+      <section class="doc-section" id="channels">
+        <h2>Channels</h2>
+        <p>Each drug listing may include pricing for one or more distribution channels. Use the dedicated channel endpoints for focused access, or <code class="inline-code">/pricelist/all</code> to retrieve everything at once.</p>
+
+        <div class="channel-cards">
+          <a href="cpd.html" class="channel-card">
+            <div class="channel-card-icon cpd">💊</div>
+            <h3>CPD</h3>
+            <p>Mail-order pharmacy. Cash and insurance pricing for direct-to-consumer orders.</p>
+            <span class="card-link">View docs →</span>
+          </a>
+          <a href="tcc.html" class="channel-card">
+            <div class="channel-card-icon tcc">🏥</div>
+            <h3>TCC</h3>
+            <p>Team Cuban Card — unfunded retail network. Locate nearby pharmacies by address.</p>
+            <span class="card-link">View docs →</span>
+          </a>
+          <a href="cpdapn.html" class="channel-card">
+            <div class="channel-card-icon apn">🏦</div>
+            <h3>CPDAPN</h3>
+            <p>Funded / leased business for PBMs and commercial payers.</p>
+            <span class="card-link">View docs →</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Exclude Fields -->
+      <section class="doc-section" id="exclude-fields">
+        <h2>Exclude Fields</h2>
+        <p>All endpoints accept the query parameter <code class="inline-code">exclude_fields</code>, allowing callers to omit fields they don't need and reduce response size.</p>
+        <p>Pass a comma-separated list of field names. To exclude a nested field, use dot notation:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">examples</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><span class="tok-cmd"># Exclude the entire equivalent_ndcs array</span>
+exclude_fields=equivalent_ndcs
+
+<span class="tok-cmd"># Exclude a nested field inside cpd_channel</span>
+exclude_fields=cpd_channel.cash_dispensing_fee
+
+<span class="tok-cmd"># Exclude multiple fields</span>
+exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
+        </div>
+      </section>
+
+      <!-- Endpoint: /pricelist/all -->
+      <section class="doc-section" id="endpoint-all">
+        <h2>GET /pricelist/all</h2>
+        <p>Returns the complete price list with CPD and TCC channels populated where available. <strong>Note:</strong> CPDAPN pricing is not included in this endpoint — use <code class="inline-code">/pricelist/cpdapn</code> or <code class="inline-code">/pricelist/search</code> for funded-network pricing.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/all</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[] (cpd_channel + tcc_channel)</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/all</pre>
+        </div>
+      </section>
+
+      <!-- Endpoint: /pricelist/search -->
+      <section class="doc-section" id="endpoint-search">
+        <h2>GET /pricelist/search</h2>
+        <p>Search across all channels by NDC or drug name term. Optionally include a patient address to surface nearby TCC pharmacies.</p>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/pricelist/search</span>
+          </div>
+          <div class="endpoint-desc">
+            <div class="response-tag success">200 OK — PriceListEntry[]</div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Provide <strong>at least one</strong> of <code class="inline-code">ndc</code> or <code class="inline-code">term</code>. If <code class="inline-code">no_substitutions=true</code>, <code class="inline-code">ndc</code> is required.</span>
+        </div>
+
+        <h3>Query Parameters</h3>
+        <table class="param-table">
+          <tbody>
+            <tr>
+              <td>
+                <span class="param-name">ndc</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                National Drug Code (with or without dashes). Without <code class="inline-code">no_substitutions=true</code>, matches entries where <code class="inline-code">equivalent_ndcs</code> contains the NDC (generic-equivalent behavior). With <code class="inline-code">no_substitutions=true</code>, matches only entries stocking the exact NDC (DAW=1 equivalent).
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">no_substitutions</span>
+                <span class="param-type">boolean · optional</span>
+              </td>
+              <td class="param-desc">
+                When <code class="inline-code">true</code>, enforces exact-NDC match. Requires <code class="inline-code">ndc</code>; returns <code class="inline-code">400</code> if omitted.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">gpi</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Medispan proprietary GPI (with or without dashes). Ignored if <code class="inline-code">ndc</code> is also provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">term</span>
+                <span class="param-type">string · optional*</span>
+              </td>
+              <td class="param-desc">
+                Partial match across <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">strength</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">address</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Street address to return nearby TCC pharmacies within 30 miles (or custom <code class="inline-code">distance</code>), sorted ascending. Format: <code class="inline-code">street, city, state, zip</code>. Omitted from response when not provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">distance</span>
+                <span class="param-type">number · optional</span>
+              </td>
+              <td class="param-desc">
+                Search radius in miles. Defaults to 30. Maximum 100. Ignored if <code class="inline-code">address</code> is not provided.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">external_sku</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Fetch a single entry by its stable external SKU. When provided, all other search parameters are ignored and the response is a single object (not an array).
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">exclude_fields</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Comma-separated list of fields to exclude. Use dot notation for nested fields.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Examples</h3>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Generic-equivalent by NDC</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Exact NDC (no substitutions)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56&no_substitutions=true"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Term search with address</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+        </div>
+
+        <h3>Error Responses</h3>
+        <div class="response-tag error">400 Bad Request</div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>{
+  <span class="tok-key">"error"</span>: <span class="tok-str">"ndc is required when asking for no substitutions"</span>
+}</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON — missing search params</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>{
+  <span class="tok-key">"error"</span>: <span class="tok-str">"search parameters must be added to the query string"</span>
+}</pre>
+        </div>
+      </section>
+
+      <!-- Schema: PriceListEntry -->
+      <section class="doc-section" id="schema-pricelistentry">
+        <h2>Schema: PriceListEntry</h2>
+        <p>Base object returned by all list and search endpoints. Channel-specific pricing is nested under <code class="inline-code">cpd_channel</code>, <code class="inline-code">tcc_channel</code>, or <code class="inline-code">cpdapn_channel</code>. A field is <code class="inline-code">null</code> or omitted when the item is not available in that channel.</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">external_sku</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Stable external SKU identifier.</td>
+            </tr>
+            <tr>
+              <td class="field-name">medication_name</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Medication display name (generic or brand).</td>
+            </tr>
+            <tr>
+              <td class="field-name">brand_generic</td>
+              <td><span class="field-type">"Generic" | "Branded"</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Drug classification.</td>
+            </tr>
+            <tr>
+              <td class="field-name">form</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Dosage form (e.g., <code class="inline-code">Tablet</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">strength</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Strength (e.g., <code class="inline-code">20 mg</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">brand_name</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>For generics, the brand this maps to; for brands, itself.</td>
+            </tr>
+            <tr>
+              <td class="field-name">pack_size</td>
+              <td><span class="field-type">number</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Numeric NDC pack size (Medi-Span). If <code class="inline-code">splittable=false</code>, dispensing is in multiples of this.</td>
+            </tr>
+            <tr>
+              <td class="field-name">quantity</td>
+              <td><span class="field-type">number</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Number of packs (from Medi-Span).</td>
+            </tr>
+            <tr>
+              <td class="field-name">unit</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>Unit of measure (e.g., <code class="inline-code">tablets</code>, <code class="inline-code">mL</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">splittable</td>
+              <td><span class="field-type">boolean</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td><code class="inline-code">true</code> if a pharmacy can dispense less than the full <code class="inline-code">pack_size</code>; <code class="inline-code">false</code> if only multiples of <code class="inline-code">pack_size</code> are available.</td>
+            </tr>
+            <tr>
+              <td class="field-name">equivalent_ndcs</td>
+              <td><span class="field-type">string[]</span></td>
+              <td><span class="badge-yes">Yes</span></td>
+              <td>All NDCs for which a generic equivalent can be provided.</td>
+            </tr>
+            <tr>
+              <td class="field-name">url</td>
+              <td><span class="field-type">string | null</span></td>
+              <td><span class="badge-cond">Conditional</span></td>
+              <td>URL for the product listing at costplusdrugs.com. Present for CPD entries; <code class="inline-code">null</code> for TCC-only entries. Omitted entirely when the response excludes <code class="inline-code">cpd_channel</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">special_handling</td>
+              <td><span class="field-type">string | null</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>Special handling designation. Value is <code class="inline-code">"cold-chain"</code> when applicable; <code class="inline-code">null</code> otherwise.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_size</td>
+              <td><span class="field-type">number</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>Default 30 for pills.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_volume</td>
+              <td><span class="field-type">string</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>Human-readable sample size (e.g., <code class="inline-code">30 tablets</code>).</td>
+            </tr>
+            <tr>
+              <td class="field-name">treatment_categories</td>
+              <td><span class="field-type">string[]</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>Readable indications and categories for the medication.</td>
+            </tr>
+            <tr>
+              <td class="field-name">cpd_channel</td>
+              <td><span class="field-type">object | null</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>CPD pricing and availability. See <a href="cpd.html#schema-cpd-channel">CPD channel schema</a>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">tcc_channel</td>
+              <td><span class="field-type">object | null</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>TCC pricing, fees, and pharmacies. See <a href="tcc.html#schema-tcc-channel">TCC channel schema</a>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">cpdapn_channel</td>
+              <td><span class="field-type">object | null</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>CPDAPN (funded) pricing. See <a href="cpdapn.html#schema-cpdapn-channel">CPDAPN channel schema</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Schema: SamplePricing -->
+      <section class="doc-section" id="schema-sampleprice">
+        <h2>Schema: SamplePricing</h2>
+        <p>Pricing calculated for multiple dispense quantities. Always three entries: 1×, 2×, and 3× the default sample pack size (typically 30, 60, 90 for splittable pills; 1, 2, 3 units for non-splittable). All price fields are returned as <strong>decimal strings</strong> (e.g., <code class="inline-code">"2.10"</code>).</p>
+
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">sample_pack_size</td>
+              <td><span class="field-type">string</span></td>
+              <td>e.g., <code class="inline-code">"30 count"</code>, <code class="inline-code">"60 count"</code>, <code class="inline-code">"1 Tablet"</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_size × price_per_unit</code>, formatted to 2 decimal places.</td>
+            </tr>
+            <tr>
+              <td class="field-name">sample_pack_price_total_to_patient_without_shipping</td>
+              <td><span class="field-type">string</span></td>
+              <td><code class="inline-code">sample_pack_price + dispensing_fee</code>, formatted to 2 decimal places.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Additional Endpoints -->
+      <section class="doc-section" id="additional-endpoints">
+        <h2>Additional Endpoints</h2>
+        <p>Beyond the primary list and search endpoints, the API exposes several focused endpoints.</p>
+
+        <h3>Channel-scoped search</h3>
+        <p>Each channel has a dedicated search endpoint that returns results filtered to that channel only:</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
+          <pre>GET /pricelist/cpd/search?ndc=00093-7424-56
+GET /pricelist/tcc/search?term=atorvastatin
+GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
+        </div>
+        <p>Accept the same query parameters as <code class="inline-code">/pricelist/search</code> (<code class="inline-code">ndc</code>, <code class="inline-code">term</code>, <code class="inline-code">gpi</code>, <code class="inline-code">strength</code>, <code class="inline-code">no_substitutions</code>, <code class="inline-code">address</code>, <code class="inline-code">distance</code>, <code class="inline-code">exclude_fields</code>). The TCC and CPDAPN scoped search endpoints also support the <code class="inline-code">address</code> parameter for pharmacy lookup.</p>
+
+        <h3>GET /pricelist/fetch</h3>
+        <p>Fetch a single entry by <code class="inline-code">external_sku</code>. Returns the matching object or <code class="inline-code">undefined</code>.</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/fetch?external_sku=942206fffceea95d4c8393c77ea617ab"</pre>
+        </div>
+
+        <h3>GET /pharmacies/tcc</h3>
+        <p>Returns all TCC (unfunded) network pharmacies. Accepts optional <code class="inline-code">address</code> and <code class="inline-code">distance</code> (max 100 miles) to filter to a geographic area.</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
+          <pre>curl -s "https://api.costplusdrugs.com/pharmacies/tcc?address=233 S Wacker Dr, Chicago, IL 60606&distance=10"</pre>
+        </div>
+
+        <h3>GET /pharmacies/cpdapn</h3>
+        <p>Returns all CPDAPN (funded) network pharmacies. Same parameters as <code class="inline-code">/pharmacies/tcc</code>.</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
+          <pre>curl -s "https://api.costplusdrugs.com/pharmacies/cpdapn?address=60606&distance=25"</pre>
+        </div>
+
+        <h3>GET /pricelist/cpd/simplified</h3>
+        <p>Returns a marketing-friendly flat list of CPD entries. Each item includes a human-readable <code class="inline-code">price</code> string rather than raw fee components. Returns three entries per drug (30-count, 60-count, 90-count or equivalent).</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/cpd/simplified</pre>
+        </div>
+        <p>Sample item:</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">JSON</span><button class="copy-btn">Copy</button></div>
+          <pre>{
+  <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
+  <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
+  <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
+  <span class="tok-key">"price"</span>: <span class="tok-str">"30 count of Atorvastatin 20 mg costs $7.10. This does not include shipping."</span>,
+  <span class="tok-key">"in_stock"</span>: <span class="tok-bool">true</span>,
+  <span class="tok-key">"special_handling"</span>: <span class="tok-str">""</span>,
+  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>],
+  <span class="tok-key">"treatment_categories"</span>: [<span class="tok-str">"Cardiovascular"</span>]
+}</pre>
+        </div>
+      </section>
+
+      <!-- Business Rules -->
+      <section class="doc-section" id="business-rules">
+        <h2>Business Rules</h2>
+        <ul>
+          <li>Provide at least one of <code class="inline-code">ndc</code> or <code class="inline-code">term</code> for <code class="inline-code">/pricelist/search</code>.</li>
+          <li><code class="inline-code">no_substitutions=true</code> requires <code class="inline-code">ndc</code> and enforces exact-NDC matching.</li>
+          <li>If <code class="inline-code">address</code> is provided, <code class="inline-code">tcc_channel.pharmacies</code> and <code class="inline-code">cpdapn_channel.pharmacies</code> are populated with nearby pharmacies (default 30-mile radius, max 100 miles), sorted ascending by distance, capped at 20 results.</li>
+          <li>If a drug is excluded for a pharmacy chain, that chain will not appear in pharmacy results for that drug.</li>
+          <li><code class="inline-code">/pricelist/all</code> returns CPD + TCC only. CPDAPN is available via <code class="inline-code">/pricelist/cpdapn</code> or <code class="inline-code">/pricelist/search</code>.</li>
+          <li><strong>CPD:</strong> <code class="inline-code">sample_pack_price_w_shipping_dispensing = sample_pack_price + shipping_cost + dispensing_fee</code></li>
+          <li><strong>TCC:</strong> <code class="inline-code">sample_pack_price_w_dispensing = sample_pack_price + pharmacy_dispensing_fee + admin_fee</code></li>
+          <li><strong>CPDAPN:</strong> <code class="inline-code">sample_pack_price_w_dispensing = sample_pack_price + pharmacy_dispensing_fee</code> (no admin fee)</li>
+          <li>Some pharmacy chains have chain-specific dispensing fees. Always use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> for patient-facing totals.</li>
+        </ul>
+      </section>
+
+    </div><!-- /content-section -->
+  </main>
+</div><!-- /layout -->
+
+<footer>
+  <span>© 2025 Cost Plus Drugs · <a href="https://costplusdrugs.com" target="_blank" rel="noopener">costplusdrugs.com</a></span>
+  <span>
+    <a href="index.html">Overview</a> ·
+    <a href="cpd.html">CPD</a> ·
+    <a href="tcc.html">TCC</a> ·
+    <a href="cpdapn.html">CPDAPN</a>
+  </span>
+</footer>
+
+<script src="assets/script.js"></script>
+</body>
+</html>
