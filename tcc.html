@@ -40,7 +40,6 @@
       <nav>
         <a href="#endpoint-list"><span class="method-tag">GET</span> /pricelist/tcc</a>
         <a href="#endpoint-tcc-search"><span class="method-tag">GET</span> /pricelist/tcc/search</a>
-        <a href="#endpoint-search"><span class="method-tag">GET</span> /pricelist/search</a>
       </nav>
     </div>
     <div class="sidebar-section">
@@ -112,7 +111,7 @@
       <!-- Endpoint: GET /pricelist/tcc -->
       <section class="doc-section" id="endpoint-list">
         <h2>GET /pricelist/tcc</h2>
-        <p>Returns the full TCC price list. Only <code class="inline-code">tcc_channel</code> is populated on each entry. The <code class="inline-code">pharmacies</code> array is omitted — use <code class="inline-code">/pricelist/search</code> with an <code class="inline-code">address</code> to include pharmacy locations.</p>
+        <p>Returns the full TCC price list. Only <code class="inline-code">tcc_channel</code> is populated on each entry. The <code class="inline-code">pharmacies</code> array is omitted — use <code class="inline-code">/pricelist/tcc/search</code> with an <code class="inline-code">address</code> to include pharmacy locations.</p>
 
         <div class="endpoint">
           <div class="endpoint-header">
@@ -155,131 +154,6 @@
             <button class="copy-btn">Copy</button>
           </div>
           <pre>curl -s "https://api.costplusdrugs.com/pricelist/tcc/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
-        </div>
-      </section>
-
-      <!-- Endpoint: GET /pricelist/search (with address) -->
-      <section class="doc-section" id="endpoint-search">
-        <h2>GET /pricelist/search</h2>
-        <p>Search by NDC or term. When an <code class="inline-code">address</code> is included, <code class="inline-code">tcc_channel.pharmacies</code> is populated with nearby locations sorted by distance.</p>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method">GET</span>
-            <span class="endpoint-path">/pricelist/search</span>
-          </div>
-          <div class="endpoint-desc">
-            <div class="response-tag success">200 OK — PriceListEntry[]</div>
-          </div>
-        </div>
-
-        <div class="callout info">
-          <span class="callout-icon">ℹ️</span>
-          <span>Provide <strong>at least one</strong> of <code class="inline-code">ndc</code> or <code class="inline-code">term</code>. Adding an <code class="inline-code">address</code> enables pharmacy geo-lookup.</span>
-        </div>
-
-        <h3>Query Parameters</h3>
-        <table class="param-table">
-          <tbody>
-            <tr>
-              <td>
-                <span class="param-name">ndc</span>
-                <span class="param-type">string · optional*</span>
-              </td>
-              <td class="param-desc">
-                National Drug Code (with or without dashes). Matches entries where <code class="inline-code">equivalent_ndcs</code> contains the NDC (generic substitution) unless <code class="inline-code">no_substitutions=true</code>.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">no_substitutions</span>
-                <span class="param-type">boolean · optional</span>
-              </td>
-              <td class="param-desc">
-                When <code class="inline-code">true</code>, enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">gpi</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Medispan GPI. Ignored if <code class="inline-code">ndc</code> is provided.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">term</span>
-                <span class="param-type">string · optional*</span>
-              </td>
-              <td class="param-desc">
-                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">strength</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">address</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Patient street address. When provided, populates <code class="inline-code">tcc_channel.pharmacies</code> with nearby TCC pharmacies sorted by ascending distance.<br>
-                Format: <code class="inline-code">street, city, state, zip</code> (e.g., <code class="inline-code">233 S Wacker Dr, Chicago, IL 60606</code>)
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">distance</span>
-                <span class="param-type">number · optional</span>
-              </td>
-              <td class="param-desc">
-                Search radius in miles. Defaults to 30. Maximum 100. Ignored if no <code class="inline-code">address</code> is provided. Pharmacy results are capped at 20 per drug entry.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">exclude_fields</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Comma-separated list of fields to exclude.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Examples</h3>
-        <div class="code-block">
-          <div class="code-block-header">
-            <span class="code-block-lang">cURL — Term search with nearby pharmacies</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-block-header">
-            <span class="code-block-lang">cURL — NDC search with 10-mile pharmacy radius</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606&distance=10"</pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-block-header">
-            <span class="code-block-lang">cURL — Exclude TCC pharmacies from response</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=metformin&exclude_fields=tcc_channel.pharmacies"</pre>
         </div>
       </section>
 

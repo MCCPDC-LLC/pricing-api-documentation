@@ -40,7 +40,6 @@
       <nav>
         <a href="#endpoint-list"><span class="method-tag">GET</span> /pricelist/cpdapn</a>
         <a href="#endpoint-cpdapn-search"><span class="method-tag">GET</span> /pricelist/cpdapn/search</a>
-        <a href="#endpoint-search"><span class="method-tag">GET</span> /pricelist/search</a>
       </nav>
     </div>
     <div class="sidebar-section">
@@ -155,130 +154,6 @@
         <div class="callout info">
           <span class="callout-icon">ℹ️</span>
           <span>When an address is provided, <code class="inline-code">cpdapn_channel.pharmacies</code> is populated with nearby <strong>funded-network</strong> pharmacies (distinct from TCC unfunded pharmacies). Results are capped at 20 per drug entry, max 100-mile radius.</span>
-        </div>
-      </section>
-
-      <!-- Endpoint: Search -->
-      <section class="doc-section" id="endpoint-search">
-        <h2>GET /pricelist/search</h2>
-        <p>Search across all channels by NDC, GPI, or term. The <code class="inline-code">cpdapn_channel</code> field is populated when a matching CPDAPN entry exists.</p>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method">GET</span>
-            <span class="endpoint-path">/pricelist/search</span>
-          </div>
-          <div class="endpoint-desc">
-            <div class="response-tag success">200 OK — PriceListEntry[]</div>
-          </div>
-        </div>
-
-        <div class="callout info">
-          <span class="callout-icon">ℹ️</span>
-          <span>Provide <strong>at least one</strong> of <code class="inline-code">ndc</code> or <code class="inline-code">term</code>. See the <a href="index.html#endpoint-search">full search parameter reference</a> on the Overview page.</span>
-        </div>
-
-        <h3>Query Parameters</h3>
-        <table class="param-table">
-          <tbody>
-            <tr>
-              <td>
-                <span class="param-name">ndc</span>
-                <span class="param-type">string · optional*</span>
-              </td>
-              <td class="param-desc">
-                National Drug Code (with or without dashes). Matches via <code class="inline-code">equivalent_ndcs</code> by default; use <code class="inline-code">no_substitutions=true</code> for exact matching.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">no_substitutions</span>
-                <span class="param-type">boolean · optional</span>
-              </td>
-              <td class="param-desc">
-                Enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">gpi</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Medispan GPI (with or without dashes). Ignored if <code class="inline-code">ndc</code> is provided.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">term</span>
-                <span class="param-type">string · optional*</span>
-              </td>
-              <td class="param-desc">
-                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">strength</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">address</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Street address to populate <code class="inline-code">cpdapn_channel.pharmacies</code> with nearby funded-network pharmacies. Format: <code class="inline-code">street, city, state, zip</code> or zip code alone.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">distance</span>
-                <span class="param-type">number · optional</span>
-              </td>
-              <td class="param-desc">
-                Search radius in miles. Defaults to 30. Maximum 100. Ignored if no <code class="inline-code">address</code> is provided. Results capped at 20 pharmacies per drug entry.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="param-name">exclude_fields</span>
-                <span class="param-type">string · optional</span>
-              </td>
-              <td class="param-desc">
-                Comma-separated list of fields to exclude from the response.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Examples</h3>
-        <div class="code-block">
-          <div class="code-block-header">
-            <span class="code-block-lang">cURL — Search by NDC</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56"</pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-block-header">
-            <span class="code-block-lang">cURL — Search by GPI</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?gpi=3900003010-2020"</pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-block-header">
-            <span class="code-block-lang">cURL — Search by term, CPDAPN channel only</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=metformin&exclude_fields=cpd_channel,tcc_channel"</pre>
         </div>
       </section>
 
