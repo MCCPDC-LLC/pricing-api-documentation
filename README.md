@@ -12,6 +12,7 @@ Static documentation site for the CPD Pricing and Network API. Deployed via GitH
 | CPD | https://mccpdc-llc.github.io/pricing-api-documentation/cpd.html | Mail-order pharmacy — cash & insurance pricing |
 | TCC | https://mccpdc-llc.github.io/pricing-api-documentation/tcc.html | Team Cuban Card retail network — pharmacy geo-lookup |
 | CPDAPN | https://mccpdc-llc.github.io/pricing-api-documentation/cpdapn.html | Funded / leased PBM network pricing |
+| MCP | https://mccpdc-llc.github.io/pricing-api-documentation/mcp.html | MCP server setup guide — connect Claude or another AI assistant |
 
 ## Deploying
 

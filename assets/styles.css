@@ -131,6 +131,7 @@ a:hover { color: var(--cpd-blue-dark); text-decoration: underline; }
 .nav-badge.cpd  { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
 .nav-badge.tcc  { background: rgba(74,135,212,0.30);  color: #93C5FD; }
 .nav-badge.apn  { background: rgba(224,90,48,0.28);   color: #FDBA74; }
+.nav-badge.mcp  { background: rgba(109,40,217,0.30);  color: #C4B5FD; }
 
 /* ── Layout ────────────────────────────────────────────────── */
 .layout {
@@ -236,6 +237,7 @@ a:hover { color: var(--cpd-blue-dark); text-decoration: underline; }
 .channel-pill.cpd { background: rgba(27,60,130,0.08); color: var(--cpd-blue); }
 .channel-pill.tcc { background: rgba(74,135,212,0.10); color: #1A5AA8; }
 .channel-pill.apn { background: rgba(224,90,48,0.08); color: #B53A10; }
+.channel-pill.mcp { background: rgba(109,40,217,0.08); color: #6D28D9; }
 .channel-pill.all { background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-muted); }
 
 .channel-pill svg { width: 14px; height: 14px; }
@@ -567,6 +569,7 @@ a:hover { color: var(--cpd-blue-dark); text-decoration: underline; }
 .channel-card-icon.cpd { background: rgba(27,60,130,0.08); }
 .channel-card-icon.tcc { background: rgba(74,135,212,0.10); }
 .channel-card-icon.apn { background: rgba(224,90,48,0.10); }
+.channel-card-icon.mcp { background: rgba(109,40,217,0.10); }
 
 .channel-card h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .channel-card p  { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
@@ -641,3 +644,77 @@ footer a:hover { color: var(--cpd-blue); text-decoration: none; }
 
 .text-muted { color: var(--text-muted); }
 .mt-0 { margin-top: 0 !important; }
+
+/* ── Numbered Steps ────────────────────────────────────────── */
+.steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 16px 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.steps > li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.steps > li::before {
+  content: counter(step);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cpd-blue);
+  background: rgba(27,60,130,0.08);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.steps h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 3px 0 4px; }
+.steps p { font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.6; }
+
+/* ── Scope Grid (what a tool does / doesn't) ──────────────────── */
+.scope-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+@media (max-width: 700px) {
+  .scope-grid { grid-template-columns: 1fr; }
+}
+
+.scope-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+.scope-card h3 { margin-bottom: 10px; }
+.scope-card ul { padding-left: 18px; margin: 0; }
+.scope-card li { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.5; }
+
+/* ── Q&A Panel ─────────────────────────────────────────────── */
+.qa {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.qa-turn + .qa-turn { padding-top: 16px; border-top: 1px solid var(--border); }
+.qa-ask { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.qa-said { font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.6; }

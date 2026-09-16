@@ -21,6 +21,7 @@
     <a href="cpd.html">CPD <span class="nav-badge cpd">Mail Order</span></a>
     <a href="tcc.html">TCC <span class="nav-badge tcc">Network</span></a>
     <a href="cpdapn.html">CPDAPN <span class="nav-badge apn">Funded</span></a>
+    <a href="mcp.html">MCP <span class="nav-badge mcp">AI Agents</span></a>
   </div>
 </nav>
 
@@ -36,6 +37,7 @@
         <a href="#server">Server &amp; Auth</a>
         <a href="#channels">Channels</a>
         <a href="#exclude-fields">Exclude Fields</a>
+        <a href="#treatment-category-filter">Treatment Category Filter</a>
       </nav>
     </div>
     <div class="sidebar-section">
@@ -135,6 +137,12 @@
             <p>Funded / leased business for PBMs and commercial payers.</p>
             <span class="card-link">View docs →</span>
           </a>
+          <a href="mcp.html" class="channel-card">
+            <div class="channel-card-icon mcp">🔌</div>
+            <h3>MCP</h3>
+            <p>Model Context Protocol server — connect Claude or another AI assistant directly to this pricing data.</p>
+            <span class="card-link">View docs →</span>
+          </a>
         </div>
       </section>
 
@@ -159,6 +167,28 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
         </div>
       </section>
 
+      <!-- Treatment Category Filter -->
+      <section class="doc-section" id="treatment-category-filter">
+        <h2>Treatment Category Filter</h2>
+        <p>All list and search endpoints (<code class="inline-code">/pricelist/all</code>, <code class="inline-code">/pricelist/cpd</code>, <code class="inline-code">/pricelist/tcc</code>, <code class="inline-code">/pricelist/cpdapn</code>, their <code class="inline-code">/search</code> variants, <code class="inline-code">/pricelist/search</code>, and <code class="inline-code">/pricelist/cpd/simplified</code>) accept the query parameter <code class="inline-code">treatment_category</code>, allowing callers to restrict results to one or more indications/categories.</p>
+        <p>Pass a comma-separated list of category names to match with OR logic. Matching is case-insensitive and matches against the <code class="inline-code">treatment_categories</code> array on each entry:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">examples</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><span class="tok-cmd"># Only entries categorized as Cardiovascular</span>
+treatment_category=Cardiovascular
+
+<span class="tok-cmd"># Entries categorized as either Cardiovascular or Diabetes</span>
+treatment_category=Cardiovascular,Diabetes</pre>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Entries with no <code class="inline-code">treatment_categories</code> data are excluded whenever <code class="inline-code">treatment_category</code> is provided.</span>
+        </div>
+      </section>
+
       <!-- Endpoint: /pricelist/all -->
       <section class="doc-section" id="endpoint-all">
         <h2>GET /pricelist/all</h2>
@@ -171,6 +201,7 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
           </div>
           <div class="endpoint-desc">
             <div class="response-tag success">200 OK — PriceListEntry[] (cpd_channel + tcc_channel)</div>
+            <p>Supports <code class="inline-code">exclude_fields</code> and <code class="inline-code">treatment_category</code>. See <a href="#exclude-fields">Exclude Fields</a> and <a href="#treatment-category-filter">Treatment Category Filter</a>.</p>
           </div>
         </div>
 
@@ -180,6 +211,14 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
             <button class="copy-btn">Copy</button>
           </div>
           <pre>curl -s https://api.costplusdrugs.com/pricelist/all</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Filter by treatment category</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/all?treatment_category=Cardiovascular"</pre>
         </div>
       </section>
 
@@ -280,6 +319,15 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
             </tr>
             <tr>
               <td>
+                <span class="param-name">treatment_category</span>
+                <span class="param-type">string · optional</span>
+              </td>
+              <td class="param-desc">
+                Filter results to entries whose <code class="inline-code">treatment_categories</code> array contains at least one match. Comma-separated for multiple categories (matched with OR logic). Case-insensitive.
+              </td>
+            </tr>
+            <tr>
+              <td>
                 <span class="param-name">exclude_fields</span>
                 <span class="param-type">string · optional</span>
               </td>
@@ -297,6 +345,14 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
             <button class="copy-btn">Copy</button>
           </div>
           <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Filter by treatment category</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&treatment_category=Cardiovascular"</pre>
         </div>
 
         <div class="code-block">
@@ -419,6 +475,12 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
               <td>All NDCs for which a generic equivalent can be provided.</td>
             </tr>
             <tr>
+              <td class="field-name">rxnorm_id</td>
+              <td><span class="field-type">string | null</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>RxNorm RXCUI for the NDC, as mapped by the <a href="https://www.nlm.nih.gov/research/umls/rxnorm/">NLM RxNorm</a> API. <code class="inline-code">null</code> if no active RxNorm mapping has been found for this NDC.</td>
+            </tr>
+            <tr>
               <td class="field-name">url</td>
               <td><span class="field-type">string | null</span></td>
               <td><span class="badge-cond">Conditional</span></td>
@@ -512,7 +574,18 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
 GET /pricelist/tcc/search?term=atorvastatin
 GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
         </div>
-        <p>Accept the same query parameters as <code class="inline-code">/pricelist/search</code> (<code class="inline-code">ndc</code>, <code class="inline-code">term</code>, <code class="inline-code">gpi</code>, <code class="inline-code">strength</code>, <code class="inline-code">no_substitutions</code>, <code class="inline-code">address</code>, <code class="inline-code">distance</code>, <code class="inline-code">exclude_fields</code>). The TCC and CPDAPN scoped search endpoints also support the <code class="inline-code">address</code> parameter for pharmacy lookup.</p>
+        <p>Accept the same query parameters as <code class="inline-code">/pricelist/search</code> (<code class="inline-code">ndc</code>, <code class="inline-code">term</code>, <code class="inline-code">gpi</code>, <code class="inline-code">strength</code>, <code class="inline-code">no_substitutions</code>, <code class="inline-code">address</code>, <code class="inline-code">distance</code>, <code class="inline-code">treatment_category</code>, <code class="inline-code">exclude_fields</code>). The TCC and CPDAPN scoped search endpoints also support the <code class="inline-code">address</code> parameter for pharmacy lookup.</p>
+
+        <h3>GET /pricelist/treatment-categories</h3>
+        <p>Returns the distinct list of <code class="inline-code">treatment_categories</code> values present across the price list, sorted alphabetically. Use this to discover valid values for the <a href="#treatment-category-filter"><code class="inline-code">treatment_category</code> filter</a>.</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
+          <pre>curl -s https://api.costplusdrugs.com/pricelist/treatment-categories</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">JSON</span><button class="copy-btn">Copy</button></div>
+          <pre>[<span class="tok-str">"Cardiovascular"</span>, <span class="tok-str">"Diabetes"</span>, <span class="tok-str">"Mental Health"</span>]</pre>
+        </div>
 
         <h3>GET /pricelist/fetch</h3>
         <p>Fetch a single entry by <code class="inline-code">external_sku</code>. Returns the matching object or <code class="inline-code">undefined</code>.</p>
@@ -536,7 +609,7 @@ GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
         </div>
 
         <h3>GET /pricelist/cpd/simplified</h3>
-        <p>Returns a marketing-friendly flat list of CPD entries. Each item includes a human-readable <code class="inline-code">price</code> string rather than raw fee components. Returns three entries per drug (30-count, 60-count, 90-count or equivalent).</p>
+        <p>Returns a marketing-friendly flat list of CPD entries. Each item includes a human-readable <code class="inline-code">price</code> string rather than raw fee components. Returns three entries per drug (30-count, 60-count, 90-count or equivalent). Supports <code class="inline-code">treatment_category</code>; see <a href="#treatment-category-filter">Treatment Category Filter</a>.</p>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
           <pre>curl -s https://api.costplusdrugs.com/pricelist/cpd/simplified</pre>
@@ -586,7 +659,8 @@ GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
     <a href="index.html">Overview</a> ·
     <a href="cpd.html">CPD</a> ·
     <a href="tcc.html">TCC</a> ·
-    <a href="cpdapn.html">CPDAPN</a>
+    <a href="cpdapn.html">CPDAPN</a> ·
+    <a href="mcp.html">MCP</a>
   </span>
 </footer>
 

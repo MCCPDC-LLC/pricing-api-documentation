@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP Server — Cost Plus Drugs Pricing & Network API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<!-- ── Top Navigation ── -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <img src="assets/MCCP-wordmark-white.svg" alt="Mark Cuban CostPlus Drug Company" class="nav-wordmark">
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="cpd.html">CPD <span class="nav-badge cpd">Mail Order</span></a>
+    <a href="tcc.html">TCC <span class="nav-badge tcc">Network</span></a>
+    <a href="cpdapn.html">CPDAPN <span class="nav-badge apn">Funded</span></a>
+    <a href="mcp.html" class="active">MCP <span class="nav-badge mcp">AI Agents</span></a>
+  </div>
+</nav>
+
+<!-- ── Layout ── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Getting Started</p>
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#connect">Connect to Claude</a>
+        <a href="#auth">Authentication</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Tools</p>
+      <nav>
+        <a href="#tools-search">Search &amp; Lookup</a>
+        <a href="#tools-orders">Order Estimation</a>
+        <a href="#tools-pharmacy">Pharmacy Locator</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Examples</p>
+      <nav>
+        <a href="#examples">Try Asking</a>
+      </nav>
+    </div>
+    <div class="sidebar-section">
+      <p class="sidebar-section-title">Scope</p>
+      <nav>
+        <a href="#scope">What It Does &amp; Doesn't</a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content-section">
+
+      <!-- Hero -->
+      <header class="page-hero">
+        <div class="channel-pill mcp">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+          MCP Server
+        </div>
+        <h1>Cost Plus Drugs MCP Connector</h1>
+        <p>A Model Context Protocol server that exposes the same CPD and TCC pricing data documented
+        on this site as tools an AI assistant can call directly — search, price lookups, pharmacy
+        location, and multi-prescription order estimates.</p>
+      </header>
+
+      <!-- Overview -->
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p>The MCP server is a thin proxy: every tool call ultimately hits the same read-only
+        endpoints described in the <a href="index.html">Pricing &amp; Network API</a> reference
+        (<code class="inline-code">/pricelist/*</code>, <code class="inline-code">/pharmacies/tcc</code>).
+        It adds no pricing logic of its own except for the multi-prescription order estimator, which
+        applies CPD's per-order dispensing and shipping rules on top of the raw price list data.</p>
+        <p>Use it to let Claude (or any MCP-compatible client) answer questions like &ldquo;what would
+        my three prescriptions cost delivered in one 90-day order?&rdquo; with real, current pricing
+        instead of guessing.</p>
+      </section>
+
+      <!-- Connect to Claude -->
+      <section class="doc-section" id="connect">
+        <h2>Connect to Claude</h2>
+        <div class="info-box">
+          <div class="info-box-row">
+            <span class="info-box-label">Connector URL</span>
+            <span class="info-box-value">https://mcp.costplusdrugs.com</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Transport</span>
+            <span class="info-box-value">MCP Streamable HTTP</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-box-label">Authentication</span>
+            <span class="info-box-value">None required</span>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">Connector URL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>https://mcp.costplusdrugs.com</pre>
+        </div>
+
+        <ol class="steps">
+          <li><div><h3>Open your connector settings</h3><p>In Claude (web or desktop), go to <code class="inline-code">Settings → Connectors</code>, reachable from your profile menu.</p></div></li>
+          <li><div><h3>Add a custom connector</h3><p>Click <code class="inline-code">+ Add</code>, then choose <code class="inline-code">Add custom connector</code>.</p></div></li>
+          <li><div><h3>Paste the URL and name it</h3><p>Enter the URL above and name it something like <code class="inline-code">Cost Plus Drugs</code>. Leave the OAuth fields under <code class="inline-code">Advanced settings</code> blank.</p></div></li>
+          <li><div><h3>Connect</h3><p>Click <code class="inline-code">Add</code>. It connects immediately with no login prompt, and its tools appear in the connector list.</p></div></li>
+          <li><div><h3>Ask a question</h3><p>Enable the connector for a conversation and ask away — Claude calls the tools below and answers with live pricing.</p></div></li>
+        </ol>
+
+        <div class="callout info">
+          <span class="callout-icon">💡</span>
+          <span>On a Team or Enterprise plan, an organization owner adds the connector once under
+          <code class="inline-code">Organization Settings → Connectors → Add → Custom</code>, then members enable it individually.
+          For the official flow, see Anthropic's guide:
+          <a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp">Get started with custom connectors</a>.</span>
+        </div>
+      </section>
+
+      <!-- Authentication -->
+      <section class="doc-section" id="auth">
+        <h2>Authentication</h2>
+        <p>The connector endpoint itself requires no API key, token, or sign-in — any MCP client
+        can call it directly, the same as the underlying pricing API.</p>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Server-side, the MCP process can be configured with an outbound
+          <code class="inline-code">FORWARD_AUTH_HEADER_NAME</code> / <code class="inline-code">FORWARD_AUTH_HEADER_VALUE</code>
+          pair to authenticate its own requests to the downstream pricing API. That's unrelated to
+          client access — it never gates incoming tool calls.</span>
+        </div>
+      </section>
+
+      <!-- Tools: Search & Lookup -->
+      <section class="doc-section" id="tools-search">
+        <h2>Search &amp; Lookup Tools</h2>
+        <table class="schema-table">
+          <thead><tr><th>Tool</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="field-name">search</td><td>Free-text search across CPD and TCC by name, NDC, GPI, or strength — accepts a combined query like &ldquo;atorvastatin 20mg&rdquo; and splits it into name + strength automatically.</td></tr>
+            <tr><td class="field-name">pricelist.all</td><td>Every entry across CPD &amp; TCC.</td></tr>
+            <tr><td class="field-name">pricelist.cpd</td><td>CPD (mail-order) channel entries only.</td></tr>
+            <tr><td class="field-name">pricelist.tcc</td><td>TCC (retail network) channel entries only.</td></tr>
+            <tr><td class="field-name">pricelist.search</td><td>Search across all channels by <code class="inline-code">ndc</code>, <code class="inline-code">gpi</code>, or <code class="inline-code">term</code>, with optional <code class="inline-code">strength</code> and <code class="inline-code">no_substitutions</code>.</td></tr>
+            <tr><td class="field-name">pricelist.cpd.search</td><td>Same search, scoped to the CPD channel.</td></tr>
+            <tr><td class="field-name">pricelist.tcc.search</td><td>Same search, scoped to the TCC channel. Accepts <code class="inline-code">address</code> to include nearby participating pharmacies.</td></tr>
+            <tr><td class="field-name">pricelist.cpd.simplified</td><td>CPD pricing as simplified, patient-facing sentences and metadata.</td></tr>
+            <tr><td class="field-name">pricelist.treatmentCategories</td><td>Lists the treatment/condition categories available, for mapping a health condition (e.g. &ldquo;scabies&rdquo;) to a searchable category.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Tools: Order Estimation -->
+      <section class="doc-section" id="tools-orders">
+        <h2>Order Estimation Tools</h2>
+        <p>These apply CPD's per-order billing rules — pharmacy labor charged once per shipment,
+        cold-chain items combined into their own separate shipment — on top of raw price list data.</p>
+        <table class="schema-table">
+          <thead><tr><th>Tool</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="field-name">order.estimate</td><td>Total delivered cost of a CPD mail-order (DTC) shipment for one or more prescriptions. Set <code class="inline-code">autorefill</code> to also compare the annualized cost of a 30-day supply refilled monthly vs. a 90-day supply refilled quarterly.</td></tr>
+            <tr><td class="field-name">order.estimate.tcc</td><td>Total cost of filling prescriptions through TCC at a retail pharmacy. No shipping, no combined per-order fee — each item prices independently, optionally against the nearest pharmacy when an <code class="inline-code">address</code> is given.</td></tr>
+            <tr><td class="field-name">order.estimate.compare</td><td>Prices the same prescriptions under both DTC and TCC and reports which channel is cheaper overall, with the dollar savings.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Tools: Pharmacy Locator -->
+      <section class="doc-section" id="tools-pharmacy">
+        <h2>Pharmacy Locator</h2>
+        <table class="schema-table">
+          <thead><tr><th>Tool</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="field-name">pharmacies.tcc</td><td>Finds Team Cuban Card network pharmacies near a ZIP code or address.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Try Asking -->
+      <section class="doc-section" id="examples">
+        <h2>Try Asking</h2>
+        <div class="qa">
+          <div class="qa-turn">
+            <p class="qa-ask">I take lisinopril, metformin, and atorvastatin. What would all three cost delivered in one 90-day order?</p>
+            <p class="qa-said">Prices each at its 90-day fill, adds shipping once for the whole order, and compares that against refilling monthly one at a time.</p>
+          </div>
+          <div class="qa-turn">
+            <p class="qa-ask">What does it cost to treat scabies at Cost Plus?</p>
+            <p class="qa-said">Maps &ldquo;scabies&rdquo; to CPD's Anti-Parasitic category and lists the options with delivered prices.</p>
+          </div>
+          <div class="qa-turn">
+            <p class="qa-ask">Can I pick up atorvastatin near 60606 instead of waiting for mail?</p>
+            <p class="qa-said">Finds participating TCC pharmacies near that ZIP with the pickup price at each, and compares against the mail-order total.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scope -->
+      <section class="doc-section" id="scope">
+        <h2>What It Does &amp; Doesn't</h2>
+        <div class="scope-grid">
+          <div class="scope-card yes">
+            <h3><span class="badge-yes">Answers</span></h3>
+            <ul>
+              <li>What a medication costs delivered to your door</li>
+              <li>What you save with a 90-day autorefill fill</li>
+              <li>The total for several prescriptions in one order</li>
+              <li>Pickup prices at TCC pharmacies near you</li>
+              <li>CPD's own condition/treatment categories</li>
+            </ul>
+          </div>
+          <div class="scope-card no">
+            <h3><span class="badge-no">Won't Do</span></h3>
+            <ul>
+              <li>Clinical or dosing advice</li>
+              <li>Substitutions or drug equivalents</li>
+              <li>Whether a drug is right for a patient</li>
+              <li>Anything beyond price &amp; availability</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">💊</span>
+          <span>CPD charges the dispensing fee once per prescription and shipping once per order —
+          which is why a 90-day fill and a combined order cost far less than the monthly, one-at-a-time
+          equivalent. A larger fill needs a prescription written for that quantity.</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <span>© 2026 Mark Cuban Cost Plus Drug Company, PBC. All rights reserved.</span>
+  <span>
+    <a href="index.html">Overview</a> ·
+    <a href="cpd.html">CPD</a> ·
+    <a href="tcc.html">TCC</a> ·
+    <a href="cpdapn.html">CPDAPN</a> ·
+    <a href="mcp.html">MCP</a>
+  </span>
+</footer>
+
+<script src="assets/script.js"></script>
+</body>
+</html>

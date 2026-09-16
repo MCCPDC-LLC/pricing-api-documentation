@@ -21,6 +21,7 @@
     <a href="cpd.html">CPD <span class="nav-badge cpd">Mail Order</span></a>
     <a href="tcc.html" class="active">TCC <span class="nav-badge tcc">Network</span></a>
     <a href="cpdapn.html">CPDAPN <span class="nav-badge apn">Funded</span></a>
+    <a href="mcp.html">MCP <span class="nav-badge mcp">AI Agents</span></a>
   </div>
 </nav>
 
@@ -120,7 +121,7 @@
           </div>
           <div class="endpoint-desc">
             <div class="response-tag success">200 OK — PriceListEntry[] (tcc_channel only, no pharmacies)</div>
-            <p>Supports the <code class="inline-code">exclude_fields</code> parameter. See <a href="index.html#exclude-fields">Exclude Fields</a>.</p>
+            <p>Supports the <code class="inline-code">exclude_fields</code> and <code class="inline-code">treatment_category</code> parameters. See <a href="index.html#exclude-fields">Exclude Fields</a> and <a href="index.html#treatment-category-filter">Treatment Category Filter</a>.</p>
           </div>
         </div>
 
@@ -308,6 +309,7 @@
   <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
   <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
   <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
+  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617314"</span>,
   <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
   <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 tablets"</span>,
   <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
@@ -414,7 +416,8 @@ patient_total_at_chain = pharmacies[i].sample_pack_price_w_dispensing</pre>
     <a href="index.html">Overview</a> ·
     <a href="cpd.html">CPD</a> ·
     <a href="tcc.html">TCC</a> ·
-    <a href="cpdapn.html">CPDAPN</a>
+    <a href="cpdapn.html">CPDAPN</a> ·
+    <a href="mcp.html">MCP</a>
   </span>
 </footer>
 
