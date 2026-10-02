@@ -228,7 +228,7 @@
             <span class="code-block-lang">cURL — Generic-equivalent by NDC</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=00093-7424-56"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=67877-0511-10"</pre>
         </div>
 
         <div class="code-block">
@@ -236,7 +236,7 @@
             <span class="code-block-lang">cURL — Exact NDC, mail order only</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=00093-7424-56&no_substitutions=true"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=67877-0511-10&no_substitutions=true"</pre>
         </div>
 
         <div class="code-block">
@@ -369,7 +369,7 @@
       <!-- Examples -->
       <section class="doc-section" id="example-response">
         <h2>Example: Full CPD Response</h2>
-        <p>Sample <code class="inline-code">PriceListEntry</code> as returned from <code class="inline-code">/pricelist/cpd</code>.</p>
+        <p>Sample <code class="inline-code">PriceListEntry</code> as returned from <code class="inline-code">/pricelist/cpd/search?ndc=67877-0511-10</code> (Atorvastatin 10mg). <code class="inline-code">equivalent_ndcs</code> is shortened here; the full entry lists every equivalent NDC.</p>
 
         <div class="code-block">
           <div class="code-block-header">
@@ -377,53 +377,51 @@
             <button class="copy-btn">Copy</button>
           </div>
           <pre>{
-  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"942206fffceea95d4c8393c77ea617ab"</span>,
+  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"d0b9ba0ae3ab9143200cfbce6ecb7a6a"</span>,
   <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
   <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
   <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
-  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"10mg"</span>,
+  <span class="tok-key">"treatment_categories"</span>: [<span class="tok-str">"Heart Health"</span>, <span class="tok-str">"High Cholesterol"</span>],
   <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
-  <span class="tok-key">"pack_size"</span>: <span class="tok-num">90</span>,
+  <span class="tok-key">"pack_size"</span>: <span class="tok-num">1000</span>,
   <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span>,
-  <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
   <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
-  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
-  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617314"</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"ea"</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"67877-0511-10"</span>, <span class="tok-str">"00904-6290-61"</span>, <span class="tok-str">"68084-0097-01"</span>],
+  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617312"</span>,
   <span class="tok-key">"special_handling"</span>: <span class="tok-null">null</span>,
   <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
-  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 tablets"</span>,
-  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 count"</span>,
+  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-10mg-tablet/?utm_source=api&amp;utm_content=pricing-api"</span>,
   <span class="tok-key">"cpd_channel"</span>: {
     <span class="tok-key">"cash_dispensing_fee"</span>: <span class="tok-num">5</span>,
-    <span class="tok-key">"insurance_dispensing_fee"</span>: <span class="tok-num">5</span>,
     <span class="tok-key">"cash_shipping_cost"</span>: <span class="tok-num">5.25</span>,
     <span class="tok-key">"cash_expedited_shipping_cost"</span>: <span class="tok-num">15</span>,
-    <span class="tok-key">"insurance_shipping_cost"</span>: <span class="tok-num">4</span>,
-    <span class="tok-key">"insurance_expedited_shipping_cost"</span>: <span class="tok-num">15</span>,
     <span class="tok-key">"insurance_eligible"</span>: <span class="tok-bool">true</span>,
     <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
     <span class="tok-key">"in_stock"</span>: <span class="tok-bool">true</span>,
-    <span class="tok-key">"price_per_unit"</span>: <span class="tok-num">0.07</span>,
-    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"2.10"</span>,
-    <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"7.10"</span>,
-    <span class="tok-key">"sample_pack_price_w_shipping_dispensing"</span>: <span class="tok-str">"12.35"</span>,
+    <span class="tok-key">"price_per_unit"</span>: <span class="tok-num">0.00834</span>,
     <span class="tok-key">"sample_pricing"</span>: [
       {
         <span class="tok-key">"sample_pack_size"</span>: <span class="tok-str">"30 count"</span>,
-        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"2.10"</span>,
-        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"7.10"</span>
+        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"0.25"</span>,
+        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"5.25"</span>
       },
       {
         <span class="tok-key">"sample_pack_size"</span>: <span class="tok-str">"60 count"</span>,
-        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"4.20"</span>,
-        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"9.20"</span>
+        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"0.50"</span>,
+        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"5.50"</span>
       },
       {
         <span class="tok-key">"sample_pack_size"</span>: <span class="tok-str">"90 count"</span>,
-        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"6.30"</span>,
-        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"11.30"</span>
+        <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"0.75"</span>,
+        <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"5.75"</span>
       }
-    ]
+    ],
+    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-str">"0.25"</span>,
+    <span class="tok-key">"sample_pack_price_total_to_patient_without_shipping"</span>: <span class="tok-str">"5.25"</span>,
+    <span class="tok-key">"sample_pack_price_w_shipping_dispensing"</span>: <span class="tok-str">"10.50"</span>
   }
 }</pre>
         </div>

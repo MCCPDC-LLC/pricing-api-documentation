@@ -171,17 +171,17 @@ exclude_fields=equivalent_ndcs,tcc_channel,special_handling</pre>
       <section class="doc-section" id="treatment-category-filter">
         <h2>Treatment Category Filter</h2>
         <p>All list and search endpoints (<code class="inline-code">/pricelist/all</code>, <code class="inline-code">/pricelist/cpd</code>, <code class="inline-code">/pricelist/tcc</code>, <code class="inline-code">/pricelist/cpdapn</code>, their <code class="inline-code">/search</code> variants, <code class="inline-code">/pricelist/search</code>, and <code class="inline-code">/pricelist/cpd/simplified</code>) accept the query parameter <code class="inline-code">treatment_category</code>, allowing callers to restrict results to one or more indications/categories.</p>
-        <p>Pass a comma-separated list of category names to match with OR logic. Matching is case-insensitive and matches against the <code class="inline-code">treatment_categories</code> array on each entry:</p>
+        <p>Pass a comma-separated list of category names to match with OR logic. Matching is case-insensitive and matches against the <code class="inline-code">treatment_categories</code> array on each entry. Valid category names are listed by <a href="#additional-endpoints"><code class="inline-code">/pricelist/treatment-categories</code></a>.</p>
         <div class="code-block">
           <div class="code-block-header">
             <span class="code-block-lang">examples</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre><span class="tok-cmd"># Only entries categorized as Cardiovascular</span>
-treatment_category=Cardiovascular
+          <pre><span class="tok-cmd"># Only entries categorized as High Cholesterol (URL-encode spaces)</span>
+treatment_category=High%20Cholesterol
 
-<span class="tok-cmd"># Entries categorized as either Cardiovascular or Diabetes</span>
-treatment_category=Cardiovascular,Diabetes</pre>
+<span class="tok-cmd"># Entries categorized as either High Cholesterol or Diabetes</span>
+treatment_category=High%20Cholesterol,Diabetes</pre>
         </div>
         <div class="callout info">
           <span class="callout-icon">ℹ️</span>
@@ -218,14 +218,14 @@ treatment_category=Cardiovascular,Diabetes</pre>
             <span class="code-block-lang">cURL — Filter by treatment category</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/all?treatment_category=Cardiovascular"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/all?treatment_category=Diabetes"</pre>
         </div>
       </section>
 
       <!-- Endpoint: /pricelist/search -->
       <section class="doc-section" id="endpoint-search">
         <h2>GET /pricelist/search</h2>
-        <p>Search across all channels by NDC or drug name term. Optionally include a patient address to surface nearby TCC pharmacies.</p>
+        <p>Search across all channels by NDC or drug name term. Optionally include a patient address to surface nearby TCC and CPDAPN pharmacies.</p>
 
         <div class="endpoint">
           <div class="endpoint-header">
@@ -296,7 +296,7 @@ treatment_category=Cardiovascular,Diabetes</pre>
                 <span class="param-type">string · optional</span>
               </td>
               <td class="param-desc">
-                Street address to return nearby TCC pharmacies within 30 miles (or custom <code class="inline-code">distance</code>), sorted ascending. Format: <code class="inline-code">street, city, state, zip</code>. Omitted from response when not provided.
+                ZIP code or street address (<code class="inline-code">street, city, state, zip</code>). Populates <code class="inline-code">tcc_channel.pharmacies</code> and <code class="inline-code">cpdapn_channel.pharmacies</code> with the nearest 20 network pharmacies within 30 miles (or custom <code class="inline-code">distance</code>), sorted ascending. Omitted from response when not provided.
               </td>
             </tr>
             <tr>
@@ -344,7 +344,7 @@ treatment_category=Cardiovascular,Diabetes</pre>
             <span class="code-block-lang">cURL — Generic-equivalent by NDC</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=67877-0511-10"</pre>
         </div>
 
         <div class="code-block">
@@ -352,7 +352,7 @@ treatment_category=Cardiovascular,Diabetes</pre>
             <span class="code-block-lang">cURL — Filter by treatment category</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&treatment_category=Cardiovascular"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&treatment_category=High%20Cholesterol"</pre>
         </div>
 
         <div class="code-block">
@@ -360,7 +360,7 @@ treatment_category=Cardiovascular,Diabetes</pre>
             <span class="code-block-lang">cURL — Exact NDC (no substitutions)</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=00093-7424-56&no_substitutions=true"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=67877-0511-10&no_substitutions=true"</pre>
         </div>
 
         <div class="code-block">
@@ -368,7 +368,9 @@ treatment_category=Cardiovascular,Diabetes</pre>
             <span class="code-block-lang">cURL — Term search with address</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?term=atorvastatin&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+          <pre>curl -sG https://api.costplusdrugs.com/pricelist/search \
+  -d term=atorvastatin \
+  --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
         </div>
 
         <h3>Error Responses</h3>
@@ -436,7 +438,7 @@ treatment_category=Cardiovascular,Diabetes</pre>
               <td class="field-name">strength</td>
               <td><span class="field-type">string</span></td>
               <td><span class="badge-yes">Yes</span></td>
-              <td>Strength (e.g., <code class="inline-code">20 mg</code>).</td>
+              <td>Strength (e.g., <code class="inline-code">10mg</code>).</td>
             </tr>
             <tr>
               <td class="field-name">brand_name</td>
@@ -502,7 +504,7 @@ treatment_category=Cardiovascular,Diabetes</pre>
               <td class="field-name">sample_volume</td>
               <td><span class="field-type">string</span></td>
               <td><span class="badge-no">No</span></td>
-              <td>Human-readable sample size (e.g., <code class="inline-code">30 tablets</code>).</td>
+              <td>Human-readable sample size (e.g., <code class="inline-code">30 count</code>).</td>
             </tr>
             <tr>
               <td class="field-name">treatment_categories</td>
@@ -570,9 +572,9 @@ treatment_category=Cardiovascular,Diabetes</pre>
         <p>Each channel has a dedicated search endpoint that returns results filtered to that channel only:</p>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
-          <pre>GET /pricelist/cpd/search?ndc=00093-7424-56
+          <pre>GET /pricelist/cpd/search?ndc=67877-0511-10
 GET /pricelist/tcc/search?term=atorvastatin
-GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
+GET /pricelist/cpdapn/search?ndc=67877-0511-10</pre>
         </div>
         <p>Accept the same query parameters as <code class="inline-code">/pricelist/search</code> (<code class="inline-code">ndc</code>, <code class="inline-code">term</code>, <code class="inline-code">gpi</code>, <code class="inline-code">strength</code>, <code class="inline-code">no_substitutions</code>, <code class="inline-code">address</code>, <code class="inline-code">distance</code>, <code class="inline-code">treatment_category</code>, <code class="inline-code">exclude_fields</code>). The TCC and CPDAPN scoped search endpoints also support the <code class="inline-code">address</code> parameter for pharmacy lookup.</p>
 
@@ -584,32 +586,34 @@ GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
         </div>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">JSON</span><button class="copy-btn">Copy</button></div>
-          <pre>[<span class="tok-str">"Cardiovascular"</span>, <span class="tok-str">"Diabetes"</span>, <span class="tok-str">"Mental Health"</span>]</pre>
+          <pre>[<span class="tok-str">"Acid Reflux"</span>, <span class="tok-str">"Alcohol Dependence"</span>, <span class="tok-str">"Allergies"</span>, ...]</pre>
         </div>
 
-        <h3>GET /pricelist/fetch</h3>
-        <p>Fetch a single entry by <code class="inline-code">external_sku</code>. Returns the matching object or <code class="inline-code">undefined</code>.</p>
+        <h3>Fetch by external_sku</h3>
+        <p>Fetch a single entry by its stable <code class="inline-code">external_sku</code> using <code class="inline-code">/pricelist/search</code>. The response is a single object rather than an array.</p>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/fetch?external_sku=942206fffceea95d4c8393c77ea617ab"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?external_sku=d0b9ba0ae3ab9143200cfbce6ecb7a6a"</pre>
         </div>
 
         <h3>GET /pharmacies/tcc</h3>
-        <p>Returns all TCC (unfunded) network pharmacies. Accepts optional <code class="inline-code">address</code> and <code class="inline-code">distance</code> (max 100 miles) to filter to a geographic area.</p>
+        <p>Returns TCC (unfunded) network pharmacies. Without an <code class="inline-code">address</code>, returns the full network. With an <code class="inline-code">address</code> (ZIP code or street address), returns the nearest 20 within <code class="inline-code">distance</code> miles (default 30, max 100), sorted by ascending distance. See the <a href="tcc.html#schema-pharmacy">Pharmacy schema</a>.</p>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
-          <pre>curl -s "https://api.costplusdrugs.com/pharmacies/tcc?address=233 S Wacker Dr, Chicago, IL 60606&distance=10"</pre>
+          <pre>curl -sG https://api.costplusdrugs.com/pharmacies/tcc \
+  --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606" \
+  -d distance=10</pre>
         </div>
 
         <h3>GET /pharmacies/cpdapn</h3>
-        <p>Returns all CPDAPN (funded) network pharmacies. Same parameters as <code class="inline-code">/pharmacies/tcc</code>.</p>
+        <p>Returns CPDAPN (funded) network pharmacies. Same parameters and behavior as <code class="inline-code">/pharmacies/tcc</code>. The funded network includes chains that are not part of TCC, such as Walgreens.</p>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
           <pre>curl -s "https://api.costplusdrugs.com/pharmacies/cpdapn?address=60606&distance=25"</pre>
         </div>
 
         <h3>GET /pricelist/cpd/simplified</h3>
-        <p>Returns a marketing-friendly flat list of CPD entries. Each item includes a human-readable <code class="inline-code">price</code> string rather than raw fee components. Returns three entries per drug (30-count, 60-count, 90-count or equivalent). Supports <code class="inline-code">treatment_category</code>; see <a href="#treatment-category-filter">Treatment Category Filter</a>.</p>
+        <p>Returns a marketing-friendly flat list of CPD entries. Each item includes a human-readable <code class="inline-code">price</code> string rather than raw fee components. Returns three entries per drug (30-count, 60-count, 90-count or equivalent). <code class="inline-code">equivalent_ndcs</code> is shortened in the sample below. Supports <code class="inline-code">treatment_category</code>; see <a href="#treatment-category-filter">Treatment Category Filter</a>.</p>
         <div class="code-block">
           <div class="code-block-header"><span class="code-block-lang">cURL</span><button class="copy-btn">Copy</button></div>
           <pre>curl -s https://api.costplusdrugs.com/pricelist/cpd/simplified</pre>
@@ -621,14 +625,14 @@ GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
   <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
   <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
   <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
-  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"10mg"</span>,
   <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
-  <span class="tok-key">"price"</span>: <span class="tok-str">"30 count of Atorvastatin 20 mg costs $7.10. This does not include shipping."</span>,
+  <span class="tok-key">"price"</span>: <span class="tok-str">"30 count of Atorvastatin 10mg costs $5.25. This does not include shipping."</span>,
   <span class="tok-key">"in_stock"</span>: <span class="tok-bool">true</span>,
   <span class="tok-key">"special_handling"</span>: <span class="tok-str">""</span>,
-  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
-  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>],
-  <span class="tok-key">"treatment_categories"</span>: [<span class="tok-str">"Cardiovascular"</span>]
+  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-10mg-tablet/?utm_source=api&amp;utm_content=pricing-api"</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"67877-0511-10"</span>, <span class="tok-str">"00904-6290-61"</span>, <span class="tok-str">"68084-0097-01"</span>],
+  <span class="tok-key">"treatment_categories"</span>: [<span class="tok-str">"Heart Health"</span>, <span class="tok-str">"High Cholesterol"</span>]
 }</pre>
         </div>
       </section>
@@ -639,7 +643,8 @@ GET /pricelist/cpdapn/search?ndc=00093-7424-56</pre>
         <ul>
           <li>Provide at least one of <code class="inline-code">ndc</code> or <code class="inline-code">term</code> for <code class="inline-code">/pricelist/search</code>.</li>
           <li><code class="inline-code">no_substitutions=true</code> requires <code class="inline-code">ndc</code> and enforces exact-NDC matching.</li>
-          <li>If <code class="inline-code">address</code> is provided, <code class="inline-code">tcc_channel.pharmacies</code> and <code class="inline-code">cpdapn_channel.pharmacies</code> are populated with nearby pharmacies (default 30-mile radius, max 100 miles), sorted ascending by distance, capped at 20 results.</li>
+          <li>If <code class="inline-code">address</code> is provided, <code class="inline-code">tcc_channel.pharmacies</code> and <code class="inline-code">cpdapn_channel.pharmacies</code> are populated with the nearest 20 network pharmacies (default 30-mile radius, max 100 miles), sorted ascending by distance.</li>
+          <li>Each channel only returns pharmacies in its own network. Chains that participate only in the funded network (e.g., Walgreens) appear in CPDAPN results and never in TCC.</li>
           <li>If a drug is excluded for a pharmacy chain, that chain will not appear in pharmacy results for that drug.</li>
           <li><code class="inline-code">/pricelist/all</code> returns CPD + TCC only. CPDAPN is available via <code class="inline-code">/pricelist/cpdapn</code> or <code class="inline-code">/pricelist/search</code>.</li>
           <li><strong>CPD:</strong> <code class="inline-code">sample_pack_price_w_shipping_dispensing = sample_pack_price + shipping_cost + dispensing_fee</code></li>

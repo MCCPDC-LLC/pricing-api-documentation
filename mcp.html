@@ -130,6 +130,13 @@
           For the official flow, see Anthropic's guide:
           <a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp">Get started with custom connectors</a>.</span>
         </div>
+
+        <div class="callout info">
+          <span class="callout-icon">🔗</span>
+          <span>A version-pinned endpoint is also available at
+          <code class="inline-code">https://mcp.costplusdrugs.com/v1</code> if you'd rather not track changes on the
+          root URL. Both currently expose the same tools.</span>
+        </div>
       </section>
 
       <!-- Authentication -->
@@ -153,14 +160,14 @@
           <thead><tr><th>Tool</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td class="field-name">search</td><td>Free-text search across CPD and TCC by name, NDC, GPI, or strength — accepts a combined query like &ldquo;atorvastatin 20mg&rdquo; and splits it into name + strength automatically.</td></tr>
-            <tr><td class="field-name">pricelist.all</td><td>Every entry across CPD &amp; TCC.</td></tr>
-            <tr><td class="field-name">pricelist.cpd</td><td>CPD (mail-order) channel entries only.</td></tr>
-            <tr><td class="field-name">pricelist.tcc</td><td>TCC (retail network) channel entries only.</td></tr>
-            <tr><td class="field-name">pricelist.search</td><td>Search across all channels by <code class="inline-code">ndc</code>, <code class="inline-code">gpi</code>, or <code class="inline-code">term</code>, with optional <code class="inline-code">strength</code> and <code class="inline-code">no_substitutions</code>.</td></tr>
-            <tr><td class="field-name">pricelist.cpd.search</td><td>Same search, scoped to the CPD channel.</td></tr>
-            <tr><td class="field-name">pricelist.tcc.search</td><td>Same search, scoped to the TCC channel. Accepts <code class="inline-code">address</code> to include nearby participating pharmacies.</td></tr>
-            <tr><td class="field-name">pricelist.cpd.simplified</td><td>CPD pricing as simplified, patient-facing sentences and metadata.</td></tr>
-            <tr><td class="field-name">pricelist.treatmentCategories</td><td>Lists the treatment/condition categories available, for mapping a health condition (e.g. &ldquo;scabies&rdquo;) to a searchable category.</td></tr>
+            <tr><td class="field-name">pricelist_all</td><td>Every entry across CPD &amp; TCC.</td></tr>
+            <tr><td class="field-name">pricelist_cpd</td><td>CPD (mail-order) channel entries only.</td></tr>
+            <tr><td class="field-name">pricelist_tcc</td><td>TCC (retail network) channel entries only.</td></tr>
+            <tr><td class="field-name">pricelist_search</td><td>Search across all channels by <code class="inline-code">ndc</code>, <code class="inline-code">gpi</code>, or <code class="inline-code">term</code>, with optional <code class="inline-code">strength</code> and <code class="inline-code">no_substitutions</code>.</td></tr>
+            <tr><td class="field-name">pricelist_cpd_search</td><td>Same search, scoped to the CPD channel.</td></tr>
+            <tr><td class="field-name">pricelist_tcc_search</td><td>Same search, scoped to the TCC channel. Accepts <code class="inline-code">address</code> to include the nearest 20 participating pharmacies.</td></tr>
+            <tr><td class="field-name">pricelist_cpd_simplified</td><td>CPD pricing as simplified, patient-facing sentences and metadata.</td></tr>
+            <tr><td class="field-name">pricelist_treatment_categories</td><td>Lists the treatment/condition categories available, for mapping a health condition (e.g. &ldquo;scabies&rdquo;) to a searchable category.</td></tr>
           </tbody>
         </table>
       </section>
@@ -173,9 +180,9 @@
         <table class="schema-table">
           <thead><tr><th>Tool</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td class="field-name">order.estimate</td><td>Total delivered cost of a CPD mail-order (DTC) shipment for one or more prescriptions. Set <code class="inline-code">autorefill</code> to also compare the annualized cost of a 30-day supply refilled monthly vs. a 90-day supply refilled quarterly.</td></tr>
-            <tr><td class="field-name">order.estimate.tcc</td><td>Total cost of filling prescriptions through TCC at a retail pharmacy. No shipping, no combined per-order fee — each item prices independently, optionally against the nearest pharmacy when an <code class="inline-code">address</code> is given.</td></tr>
-            <tr><td class="field-name">order.estimate.compare</td><td>Prices the same prescriptions under both DTC and TCC and reports which channel is cheaper overall, with the dollar savings.</td></tr>
+            <tr><td class="field-name">order_estimate</td><td>Total delivered cost of a CPD mail-order (DTC) shipment for one or more prescriptions. Set <code class="inline-code">autorefill</code> to also compare the annualized cost of a 30-day supply refilled monthly vs. a 90-day supply refilled quarterly.</td></tr>
+            <tr><td class="field-name">order_estimate_tcc</td><td>Total cost of filling prescriptions through TCC at a retail pharmacy. No shipping, no combined per-order fee — each item prices independently, optionally against the nearest pharmacy when an <code class="inline-code">address</code> is given.</td></tr>
+            <tr><td class="field-name">order_estimate_compare</td><td>Prices the same prescriptions under both DTC and TCC and reports which channel is cheaper overall, with the dollar savings.</td></tr>
           </tbody>
         </table>
       </section>
@@ -186,7 +193,7 @@
         <table class="schema-table">
           <thead><tr><th>Tool</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td class="field-name">pharmacies.tcc</td><td>Finds Team Cuban Card network pharmacies near a ZIP code or address.</td></tr>
+            <tr><td class="field-name">pharmacies_tcc</td><td>Finds the nearest Team Cuban Card network pharmacies (up to 20) to a ZIP code or address. <code class="inline-code">address</code> is required; <code class="inline-code">distance</code> sets the search radius in miles (default 30, max 100).</td></tr>
           </tbody>
         </table>
       </section>

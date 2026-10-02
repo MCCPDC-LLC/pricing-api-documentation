@@ -54,6 +54,7 @@
       <p class="sidebar-section-title">Examples</p>
       <nav>
         <a href="#example-response">Response Example</a>
+        <a href="#example-pharmacy">With Pharmacies</a>
         <a href="#example-curls">Quick Reference</a>
       </nav>
     </div>
@@ -149,12 +150,14 @@
             <span class="code-block-lang">cURL — CPDAPN-scoped search with pharmacy lookup</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+          <pre>curl -sG https://api.costplusdrugs.com/pricelist/cpdapn/search \
+  -d ndc=67877-0511-10 \
+  --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
         </div>
 
         <div class="callout info">
           <span class="callout-icon">ℹ️</span>
-          <span>When an address is provided, <code class="inline-code">cpdapn_channel.pharmacies</code> is populated with nearby <strong>funded-network</strong> pharmacies (distinct from TCC unfunded pharmacies). Results are capped at 20 per drug entry, max 100-mile radius.</span>
+          <span>When an address is provided, <code class="inline-code">cpdapn_channel.pharmacies</code> is populated with nearby <strong>funded-network</strong> pharmacies (distinct from TCC unfunded pharmacies): the nearest 20 per drug entry within the search radius (default 30 miles, max 100). The funded network includes chains that are not part of TCC, such as Walgreens.</span>
         </div>
       </section>
 
@@ -196,7 +199,7 @@
             <tr>
               <td class="field-name">pharmacies</td>
               <td><span class="field-type">Pharmacy[] | omitted</span></td>
-              <td>Nearby funded-network pharmacies. Present only when <code class="inline-code">address</code> is provided to a search endpoint. Capped at 20 results. See <a href="tcc.html#schema-pharmacy">Pharmacy schema</a>.</td>
+              <td>Nearby funded-network pharmacies. Present only when <code class="inline-code">address</code> is provided to a search endpoint. The nearest 20 within the search radius, sorted by ascending distance. See <a href="tcc.html#schema-pharmacy">Pharmacy schema</a>.</td>
             </tr>
           </tbody>
         </table>
@@ -250,7 +253,7 @@
       <!-- Example Response -->
       <section class="doc-section" id="example-response">
         <h2>Example: CPDAPN Response</h2>
-        <p>Sample <code class="inline-code">PriceListEntry</code> as returned from <code class="inline-code">/pricelist/cpdapn</code>.</p>
+        <p>Sample <code class="inline-code">PriceListEntry</code> as returned from <code class="inline-code">/pricelist/cpdapn/search?ndc=67877-0511-10</code> (Atorvastatin 10mg). <code class="inline-code">equivalent_ndcs</code> is shortened here.</p>
 
         <div class="code-block">
           <div class="code-block-header">
@@ -258,28 +261,93 @@
             <button class="copy-btn">Copy</button>
           </div>
           <pre>{
-  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"942206fffceea95d4c8393c77ea617ab"</span>,
+  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"d0b9ba0ae3ab9143200cfbce6ecb7a6a"</span>,
   <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
   <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
   <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
-  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"10mg"</span>,
+  <span class="tok-key">"treatment_categories"</span>: [<span class="tok-str">"Heart Health"</span>, <span class="tok-str">"High Cholesterol"</span>],
   <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
-  <span class="tok-key">"pack_size"</span>: <span class="tok-num">90</span>,
+  <span class="tok-key">"pack_size"</span>: <span class="tok-num">1000</span>,
   <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span>,
-  <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
   <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
-  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
-  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617314"</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"ea"</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"67877-0511-10"</span>, <span class="tok-str">"00904-6290-61"</span>, <span class="tok-str">"68084-0097-01"</span>],
+  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617312"</span>,
+  <span class="tok-key">"special_handling"</span>: <span class="tok-null">null</span>,
   <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
-  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 count"</span>,
   <span class="tok-key">"cpdapn_channel"</span>: {
-    <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.06667"</span>,
+    <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.01090"</span>,
     <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
     <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
-    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">1.80</span>,
-    <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.80</span>
+    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">0.33</span>,
+    <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">12.33</span>
   }
 }</pre>
+        </div>
+      </section>
+
+      <!-- Example: With Pharmacies -->
+      <section class="doc-section" id="example-pharmacy">
+        <h2>Example: With Nearby Pharmacies</h2>
+        <p>Same drug when an address is provided to <code class="inline-code">/pricelist/cpdapn/search</code>. Funded-network results include chains that are not part of TCC, such as Walgreens, which carries its own dispensing fee. The first 2 of 20 pharmacies are shown.</p>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -sG https://api.costplusdrugs.com/pricelist/cpdapn/search \
+  -d ndc=67877-0511-10 \
+  --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON — cpdapn_channel (with pharmacies)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><span class="tok-key">"cpdapn_channel"</span>: {
+  <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.01090"</span>,
+  <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+  <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
+  <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">0.33</span>,
+  <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">12.33</span>,
+  <span class="tok-key">"pharmacies"</span>: [
+    {
+      <span class="tok-key">"name"</span>: <span class="tok-str">"WALGREENS #2432"</span>,
+      <span class="tok-key">"address"</span>: <span class="tok-str">"200 W ADAMS ST, CHICAGO, IL, 60606-5208"</span>,
+      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"200 W ADAMS ST"</span>, <span class="tok-key">"line2"</span>: <span class="tok-str">""</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"CHICAGO"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60606-5208"</span> },
+      <span class="tok-key">"distance"</span>: <span class="tok-str">"0.12"</span>,
+      <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">13.05</span>,
+      <span class="tok-key">"chain"</span>: <span class="tok-str">"WAG"</span>,
+      <span class="tok-key">"chain_code"</span>: <span class="tok-str">"226"</span>,
+      <span class="tok-key">"phone_number"</span>: <span class="tok-null">null</span>,
+      <span class="tok-key">"npi"</span>: <span class="tok-str">"1457366775"</span>,
+      <span class="tok-key">"effective_date"</span>: <span class="tok-str">"2025-02-02 00:00:00"</span>,
+      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.38</span>
+    },
+    {
+      <span class="tok-key">"name"</span>: <span class="tok-str">"Printer's Row Pharmacy"</span>,
+      <span class="tok-key">"address"</span>: <span class="tok-str">"701 South Clark Street, Chicago, IL, 60605"</span>,
+      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"701 South Clark Street"</span>, <span class="tok-key">"line2"</span>: <span class="tok-str">""</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60605"</span> },
+      <span class="tok-key">"distance"</span>: <span class="tok-str">"0.45"</span>,
+      <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+      <span class="tok-key">"chain"</span>: <span class="tok-str">"Independent"</span>,
+      <span class="tok-key">"chain_code"</span>: <span class="tok-null">null</span>,
+      <span class="tok-key">"phone_number"</span>: <span class="tok-str">"773-200-2616"</span>,
+      <span class="tok-key">"npi"</span>: <span class="tok-str">"1992551188"</span>,
+      <span class="tok-key">"effective_date"</span>: <span class="tok-str">"2024-12-02 00:00:00"</span>,
+      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.33</span>
+    }
+  ]
+}</pre>
+        </div>
+
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> — not <code class="inline-code">cpdapn_channel.sample_pack_price_w_dispensing</code> — for pharmacy-specific pricing. In this example the Walgreens total is $14.38 versus the $12.33 standard.</span>
         </div>
       </section>
 
@@ -300,7 +368,7 @@
             <span class="code-block-lang">cURL — Search by NDC (generic equivalent)</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?ndc=00093-7424-56"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?ndc=67877-0511-10"</pre>
         </div>
 
         <div class="code-block">
@@ -308,7 +376,7 @@
             <span class="code-block-lang">cURL — Exact NDC (DAW=1 equivalent)</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?ndc=00093-7424-56&no_substitutions=true"</pre>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?ndc=67877-0511-10&no_substitutions=true"</pre>
         </div>
 
         <div class="code-block">
@@ -321,7 +389,7 @@
 
         <div class="code-block">
           <div class="code-block-header">
-            <span class="code-block-lang">cURL — All funded-network pharmacies near a zip code</span>
+            <span class="code-block-lang">cURL — Nearest funded-network pharmacies to a ZIP code</span>
             <button class="copy-btn">Copy</button>
           </div>
           <pre>curl -s "https://api.costplusdrugs.com/pharmacies/cpdapn?address=60606&distance=25"</pre>

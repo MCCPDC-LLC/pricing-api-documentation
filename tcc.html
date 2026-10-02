@@ -105,7 +105,7 @@
 
         <div class="callout info">
           <span class="callout-icon">ℹ️</span>
-          <span>If a TCC product is excluded by a pharmacy chain, that chain's locations will not appear in the pharmacy results, even if they are within the search radius.</span>
+          <span>Only TCC network pharmacies are returned. Chains that participate only in the funded network (e.g., Walgreens) appear in <a href="cpdapn.html">CPDAPN</a> results, never TCC. If a TCC product is excluded by a pharmacy chain, that chain's locations will not appear in the pharmacy results for that product, even if they are within the search radius.</span>
         </div>
       </section>
 
@@ -154,7 +154,9 @@
             <span class="code-block-lang">cURL — TCC-scoped NDC search with pharmacies</span>
             <button class="copy-btn">Copy</button>
           </div>
-          <pre>curl -s "https://api.costplusdrugs.com/pricelist/tcc/search?ndc=00093-7424-56&address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+          <pre>curl -sG https://api.costplusdrugs.com/pricelist/tcc/search \
+  -d ndc=67877-0511-10 \
+  --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
         </div>
       </section>
 
@@ -176,7 +178,7 @@
             <tr>
               <td class="field-name">pharmacy_dispensing_fee</td>
               <td><span class="field-type">number</span></td>
-              <td>Standard TCC dispensing fee (USD). Some chains (e.g., Walgreens) have a different fee — see <code class="inline-code">pharmacies[].pharmacy_dispensing_fee</code>.</td>
+              <td>Standard TCC dispensing fee (USD). Pharmacy-specific fees, when present, are in <code class="inline-code">pharmacies[].pharmacy_dispensing_fee</code>.</td>
             </tr>
             <tr>
               <td class="field-name">currency</td>
@@ -201,7 +203,7 @@
             <tr>
               <td class="field-name">pharmacies</td>
               <td><span class="field-type">Pharmacy[] | omitted</span></td>
-              <td>Nearby pharmacies. <strong>Only present when <code class="inline-code">address</code> is provided.</strong> Capped at 20 results. Sorted by ascending distance. Pharmacies that exclude this specific TCC product are filtered out.</td>
+              <td>Nearby TCC network pharmacies. <strong>Only present when <code class="inline-code">address</code> is provided.</strong> The nearest 20 within the search radius, sorted by ascending distance. Pharmacies outside the TCC network, or that exclude this specific TCC product, are filtered out before the 20 are selected.</td>
             </tr>
           </tbody>
         </table>
@@ -210,7 +212,7 @@
       <!-- Schema: Pharmacy -->
       <section class="doc-section" id="schema-pharmacy">
         <h2>Schema: Pharmacy</h2>
-        <p>One entry per participating pharmacy within the search radius, nested under <code class="inline-code">tcc_channel.pharmacies</code>.</p>
+        <p>One entry per participating pharmacy within the search radius, nested under <code class="inline-code">tcc_channel.pharmacies</code> (and <code class="inline-code">cpdapn_channel.pharmacies</code> on CPDAPN searches). <code class="inline-code">/pharmacies/tcc</code> and <code class="inline-code">/pharmacies/cpdapn</code> return the same fields except the drug-specific <code class="inline-code">pharmacy_dispensing_fee</code> and <code class="inline-code">sample_pack_price_w_dispensing</code>, and include <code class="inline-code">distance</code> only when an <code class="inline-code">address</code> is given.</p>
 
         <table class="schema-table">
           <thead>
@@ -221,7 +223,7 @@
               <td class="field-name">name</td>
               <td><span class="field-type">string</span></td>
               <td><span class="badge-yes">Yes</span></td>
-              <td>Pharmacy name (e.g., <code class="inline-code">Walgreens</code>, <code class="inline-code">Community Pharmacy</code>).</td>
+              <td>Pharmacy name (e.g., <code class="inline-code">Osco Pharmacy</code>, <code class="inline-code">Printer's Row Pharmacy</code>).</td>
             </tr>
             <tr>
               <td class="field-name">npi</td>
@@ -231,9 +233,9 @@
             </tr>
             <tr>
               <td class="field-name">chain_code</td>
-              <td><span class="field-type">string</span></td>
+              <td><span class="field-type">string | null</span></td>
               <td><span class="badge-no">No</span></td>
-              <td>Chain code if the pharmacy is part of a chain.</td>
+              <td>Numeric chain code (e.g., <code class="inline-code">"156"</code>) if the pharmacy is part of a chain; <code class="inline-code">null</code> for independents.</td>
             </tr>
             <tr>
               <td class="field-name">address</td>
@@ -251,7 +253,7 @@
               <td class="field-name">pharmacy_dispensing_fee</td>
               <td><span class="field-type">number</span></td>
               <td><span class="badge-yes">Yes</span></td>
-              <td>Chain-specific dispensing fee. For most pharmacies this equals <code class="inline-code">tcc_channel.pharmacy_dispensing_fee</code>; some chains (e.g., Walgreens) may differ.</td>
+              <td>Pharmacy-specific dispensing fee. For most pharmacies this equals the channel's <code class="inline-code">pharmacy_dispensing_fee</code>; some chains differ (e.g., Walgreens on the CPDAPN network).</td>
             </tr>
             <tr>
               <td class="field-name">sample_pack_price_w_dispensing</td>
@@ -269,13 +271,13 @@
               <td class="field-name">chain</td>
               <td><span class="field-type">string</span></td>
               <td><span class="badge-yes">Yes</span></td>
-              <td>Chain name identifier (e.g., <code class="inline-code">"WAG"</code> for Walgreens).</td>
+              <td>Chain name identifier (e.g., <code class="inline-code">"Albertsons"</code>, <code class="inline-code">"Kroger"</code>, <code class="inline-code">"Independent"</code>; <code class="inline-code">"WAG"</code> for Walgreens, CPDAPN only).</td>
             </tr>
             <tr>
               <td class="field-name">phone_number</td>
-              <td><span class="field-type">string</span></td>
-              <td><span class="badge-yes">Yes</span></td>
-              <td>Pharmacy phone number.</td>
+              <td><span class="field-type">string | null</span></td>
+              <td><span class="badge-no">No</span></td>
+              <td>Pharmacy phone number, when available.</td>
             </tr>
             <tr>
               <td class="field-name">effective_date</td>
@@ -290,7 +292,7 @@
       <!-- Example: Full Response -->
       <section class="doc-section" id="example-response">
         <h2>Example: Full TCC Response</h2>
-        <p>Sample <code class="inline-code">tcc_channel</code> as returned from <code class="inline-code">/pricelist/tcc</code> (no address provided, so <code class="inline-code">pharmacies</code> is omitted).</p>
+        <p>Sample entry as returned from <code class="inline-code">/pricelist/tcc/search?ndc=67877-0511-10</code> (Atorvastatin 10mg; no address provided, so <code class="inline-code">pharmacies</code> is omitted). <code class="inline-code">equivalent_ndcs</code> is shortened here.</p>
 
         <div class="code-block">
           <div class="code-block-header">
@@ -298,28 +300,29 @@
             <button class="copy-btn">Copy</button>
           </div>
           <pre>{
-  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"942206fffceea95d4c8393c77ea617ab"</span>,
+  <span class="tok-key">"external_sku"</span>: <span class="tok-str">"d0b9ba0ae3ab9143200cfbce6ecb7a6a"</span>,
   <span class="tok-key">"medication_name"</span>: <span class="tok-str">"Atorvastatin"</span>,
   <span class="tok-key">"brand_generic"</span>: <span class="tok-str">"Generic"</span>,
   <span class="tok-key">"form"</span>: <span class="tok-str">"Tablet"</span>,
-  <span class="tok-key">"strength"</span>: <span class="tok-str">"20 mg"</span>,
+  <span class="tok-key">"strength"</span>: <span class="tok-str">"10mg"</span>,
+  <span class="tok-key">"treatment_categories"</span>: [<span class="tok-str">"Heart Health"</span>, <span class="tok-str">"High Cholesterol"</span>],
   <span class="tok-key">"brand_name"</span>: <span class="tok-str">"Lipitor"</span>,
-  <span class="tok-key">"pack_size"</span>: <span class="tok-num">90</span>,
+  <span class="tok-key">"pack_size"</span>: <span class="tok-num">1000</span>,
   <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span>,
-  <span class="tok-key">"unit"</span>: <span class="tok-str">"tablets"</span>,
   <span class="tok-key">"splittable"</span>: <span class="tok-bool">true</span>,
-  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"00093-7424-56"</span>, <span class="tok-str">"60505-2682-3"</span>],
-  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617314"</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"ea"</span>,
+  <span class="tok-key">"equivalent_ndcs"</span>: [<span class="tok-str">"67877-0511-10"</span>, <span class="tok-str">"00904-6290-61"</span>, <span class="tok-str">"68084-0097-01"</span>],
+  <span class="tok-key">"rxnorm_id"</span>: <span class="tok-str">"617312"</span>,
+  <span class="tok-key">"special_handling"</span>: <span class="tok-null">null</span>,
   <span class="tok-key">"sample_pack_size"</span>: <span class="tok-num">30</span>,
-  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 tablets"</span>,
-  <span class="tok-key">"url"</span>: <span class="tok-url">"https://www.costplusdrugs.com/medications/atorvastatin-20mg-tablet/"</span>,
+  <span class="tok-key">"sample_volume"</span>: <span class="tok-str">"30 count"</span>,
   <span class="tok-key">"tcc_channel"</span>: {
-    <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.06667"</span>,
+    <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.01090"</span>,
     <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
     <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
     <span class="tok-key">"admin_fee"</span>: <span class="tok-num">1</span>,
-    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">1.80</span>,
-    <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.80</span>
+    <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">0.33</span>,
+    <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.33</span>
   }
 }</pre>
         </div>
@@ -328,7 +331,7 @@
       <!-- Example: With Pharmacies -->
       <section class="doc-section" id="example-pharmacy">
         <h2>Example: With Nearby Pharmacies</h2>
-        <p>Same drug when an address is provided to <code class="inline-code">/pricelist/tcc/search</code>. The <code class="inline-code">pharmacies</code> array is now populated and sorted by distance.</p>
+        <p>Same drug when an address is provided to <code class="inline-code">/pricelist/tcc/search</code> (the request shown above). The <code class="inline-code">pharmacies</code> array is now populated and sorted by distance; the first 2 of 20 are shown.</p>
 
         <div class="code-block">
           <div class="code-block-header">
@@ -336,34 +339,38 @@
             <button class="copy-btn">Copy</button>
           </div>
           <pre><span class="tok-key">"tcc_channel"</span>: {
-  <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.06667"</span>,
+  <span class="tok-key">"price_per_unit"</span>: <span class="tok-str">"0.01090"</span>,
   <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
   <span class="tok-key">"currency"</span>: <span class="tok-str">"USD"</span>,
   <span class="tok-key">"admin_fee"</span>: <span class="tok-num">1</span>,
-  <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">1.80</span>,
-  <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.80</span>,
+  <span class="tok-key">"sample_pack_price"</span>: <span class="tok-num">0.33</span>,
+  <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.33</span>,
   <span class="tok-key">"pharmacies"</span>: [
     {
-      <span class="tok-key">"name"</span>: <span class="tok-str">"Walgreens"</span>,
-      <span class="tok-key">"npi"</span>: <span class="tok-str">"1234567890"</span>,
-      <span class="tok-key">"chain"</span>: <span class="tok-str">"WAG"</span>,
-      <span class="tok-key">"chain_code"</span>: <span class="tok-str">"WAG"</span>,
-      <span class="tok-key">"address"</span>: <span class="tok-str">"151 N State St, Chicago, IL 60601"</span>,
-      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"151 N State St"</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60601"</span> },
-      <span class="tok-key">"distance"</span>: <span class="tok-str">"0.60"</span>,
-      <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">14.05</span>,
-      <span class="tok-key">"phone_number"</span>: <span class="tok-str">"312-555-0100"</span>,
-      <span class="tok-key">"effective_date"</span>: <span class="tok-str">"2024-01-01"</span>,
-      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">15.85</span>
+      <span class="tok-key">"name"</span>: <span class="tok-str">"Printer's Row Pharmacy"</span>,
+      <span class="tok-key">"address"</span>: <span class="tok-str">"701 South Clark Street, Chicago, IL, 60605"</span>,
+      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"701 South Clark Street"</span>, <span class="tok-key">"line2"</span>: <span class="tok-str">""</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60605"</span> },
+      <span class="tok-key">"distance"</span>: <span class="tok-str">"0.45"</span>,
+      <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
+      <span class="tok-key">"chain"</span>: <span class="tok-str">"Independent"</span>,
+      <span class="tok-key">"chain_code"</span>: <span class="tok-null">null</span>,
+      <span class="tok-key">"phone_number"</span>: <span class="tok-str">"773-200-2616"</span>,
+      <span class="tok-key">"npi"</span>: <span class="tok-str">"1992551188"</span>,
+      <span class="tok-key">"effective_date"</span>: <span class="tok-str">"2024-12-02 00:00:00"</span>,
+      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.33</span>
     },
     {
-      <span class="tok-key">"name"</span>: <span class="tok-str">"Community Pharmacy"</span>,
-      <span class="tok-key">"npi"</span>: <span class="tok-str">"9876543210"</span>,
-      <span class="tok-key">"address"</span>: <span class="tok-str">"200 W Madison St, Chicago, IL 60606"</span>,
-      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"200 W Madison St"</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60606"</span> },
-      <span class="tok-key">"distance"</span>: <span class="tok-str">"1.70"</span>,
+      <span class="tok-key">"name"</span>: <span class="tok-str">"Osco Pharmacy"</span>,
+      <span class="tok-key">"address"</span>: <span class="tok-str">"370 N DESPLAINES ST, Chicago, IL, 60661"</span>,
+      <span class="tok-key">"address_obj"</span>: { <span class="tok-key">"line"</span>: <span class="tok-str">"370 N DESPLAINES ST"</span>, <span class="tok-key">"line2"</span>: <span class="tok-str">""</span>, <span class="tok-key">"city"</span>: <span class="tok-str">"Chicago"</span>, <span class="tok-key">"state"</span>: <span class="tok-str">"IL"</span>, <span class="tok-key">"postal_code"</span>: <span class="tok-str">"60661"</span> },
+      <span class="tok-key">"distance"</span>: <span class="tok-str">"0.84"</span>,
       <span class="tok-key">"pharmacy_dispensing_fee"</span>: <span class="tok-num">12</span>,
-      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">14.80</span>
+      <span class="tok-key">"chain"</span>: <span class="tok-str">"Albertsons"</span>,
+      <span class="tok-key">"chain_code"</span>: <span class="tok-str">"156"</span>,
+      <span class="tok-key">"phone_number"</span>: <span class="tok-str">"(312) 243-2714"</span>,
+      <span class="tok-key">"npi"</span>: <span class="tok-str">"1669636601"</span>,
+      <span class="tok-key">"effective_date"</span>: <span class="tok-str">"2024-03-04 00:00:00"</span>,
+      <span class="tok-key">"sample_pack_price_w_dispensing"</span>: <span class="tok-num">13.33</span>
     }
   ]
 }</pre>
@@ -371,7 +378,7 @@
 
         <div class="callout warn">
           <span class="callout-icon">⚠️</span>
-          <span>Always use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> — not <code class="inline-code">tcc_channel.sample_pack_price_w_dispensing</code> — for pharmacy-specific pricing displayed to a patient. Chain pharmacies like Walgreens may have different dispensing fees than the standard TCC rate.</span>
+          <span>Always use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> — not <code class="inline-code">tcc_channel.sample_pack_price_w_dispensing</code> — for pharmacy-specific pricing displayed to a patient. A pharmacy's dispensing fee can differ from the standard TCC rate.</span>
         </div>
       </section>
 
