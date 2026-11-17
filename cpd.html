@@ -171,7 +171,7 @@
                 <span class="param-type">boolean · optional</span>
               </td>
               <td class="param-desc">
-                When <code class="inline-code">true</code>, enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>; returns <code class="inline-code">400</code> otherwise.
+                When <code class="inline-code">true</code>, enforces exact-NDC matching. Requires <code class="inline-code">ndc</code>; returns <code class="inline-code">400</code> otherwise. Only <code class="inline-code">true</code> or <code class="inline-code">1</code> turn it on; any other value (including <code class="inline-code">false</code>) is treated as false. Matches NDCs on either the CPD or TCC price list and returns an empty array if the NDC is on neither.
               </td>
             </tr>
             <tr>
@@ -189,7 +189,7 @@
                 <span class="param-type">string · optional*</span>
               </td>
               <td class="param-desc">
-                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+                Partial match against <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Case-insensitive; spaces are ignored. If nothing contains the term, close misspellings are returned instead (terms of 4+ characters, e.g. <code class="inline-code">brilinita</code> finds Brilinta), flagged with <code class="inline-code">fuzzy_match</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
               </td>
             </tr>
             <tr>
@@ -198,7 +198,7 @@
                 <span class="param-type">string · optional</span>
               </td>
               <td class="param-desc">
-                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+                Filter by dosage strength (e.g., <code class="inline-code">10mg</code>). Case- and space-insensitive, so <code class="inline-code">10mg</code> and <code class="inline-code">10 mg</code> are equivalent. Requires <code class="inline-code">term</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
               </td>
             </tr>
             <tr>
@@ -208,6 +208,24 @@
               </td>
               <td class="param-desc">
                 Filter to entries whose <code class="inline-code">treatment_categories</code> array contains a match. Comma-separated for multiple (OR logic). See <a href="index.html#treatment-category-filter">Treatment Category Filter</a>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">units</span>
+                <span class="param-type">number · optional</span>
+              </td>
+              <td class="param-desc">
+                Price each result at this many units. Any whole number for splittable products; a multiple of <code class="inline-code">pack_size</code> for non-splittable products. Adds <code class="inline-code">cpd_channel.requested_quantity_pricing</code>. See <a href="index.html#custom-quantity">Custom Quantity Pricing</a>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">packs</span>
+                <span class="param-type">integer · optional</span>
+              </td>
+              <td class="param-desc">
+                Non-splittable products only: price each result at this many whole packages. Cannot be combined with <code class="inline-code">units</code>.
               </td>
             </tr>
             <tr>
@@ -245,6 +263,14 @@
             <button class="copy-btn">Copy</button>
           </div>
           <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?term=atorvastatin&strength=20mg"</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Custom quantity (45 tablets)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpd/search?ndc=67877-0511-10&units=45"</pre>
         </div>
       </section>
 
@@ -327,6 +353,11 @@
               <td class="field-name">sample_pricing</td>
               <td><span class="field-type">SamplePricing[]</span></td>
               <td>Pricing for 3 dispense quantities: 1×, 2×, and 3× the default sample size (typically 30/60/90 for pills; 1/2/3 for non-pills).</td>
+            </tr>
+            <tr>
+              <td class="field-name">requested_quantity_pricing</td>
+              <td><span class="field-type">object | omitted</span></td>
+              <td>Only present when <code class="inline-code">units</code> or <code class="inline-code">packs</code> is passed to a search endpoint and the amount is valid for this product. Prices are <strong>decimal strings</strong>, like <code class="inline-code">sample_pricing</code>. Fields: <code class="inline-code">units</code> (number), <code class="inline-code">price</code> (<code class="inline-code">units × price_per_unit</code>), <code class="inline-code">price_total_to_patient_without_shipping</code> (<code class="inline-code">price + cash_dispensing_fee</code>), <code class="inline-code">price_w_shipping_dispensing</code> (<code class="inline-code">price + cash_dispensing_fee + cash_shipping_cost</code>). See <a href="index.html#custom-quantity">Custom Quantity Pricing</a>.</td>
             </tr>
           </tbody>
         </table>
@@ -439,7 +470,7 @@
               + cash_dispensing_fee      <span class="tok-cmd">// $5 standard · $15 cold-chain</span>
               + cash_shipping_cost       <span class="tok-cmd">// $5.25 standard · $55 cold-chain</span></pre>
         </div>
-        <p>This is pre-computed in <code class="inline-code">cpd_channel.sample_pack_price_w_shipping_dispensing</code> for the default <code class="inline-code">sample_pack_size</code> only. Per-quantity totals without shipping are in <code class="inline-code">sample_pricing[].sample_pack_price_total_to_patient_without_shipping</code>.</p>
+        <p>This is pre-computed in <code class="inline-code">cpd_channel.sample_pack_price_w_shipping_dispensing</code> for the default <code class="inline-code">sample_pack_size</code> only. Per-quantity totals without shipping are in <code class="inline-code">sample_pricing[].sample_pack_price_total_to_patient_without_shipping</code>. For any other amount, pass <code class="inline-code">units</code> or <code class="inline-code">packs</code> and read <code class="inline-code">cpd_channel.requested_quantity_pricing.price_w_shipping_dispensing</code>.</p>
       </section>
 
       <section class="doc-section" id="example-insurance">

@@ -155,6 +155,14 @@
   --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
         </div>
 
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Custom quantity (2 packages of a non-splittable product)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/cpdapn/search?term=latanoprost&packs=2"</pre>
+        </div>
+
         <div class="callout info">
           <span class="callout-icon">ℹ️</span>
           <span>When an address is provided, <code class="inline-code">cpdapn_channel.pharmacies</code> is populated with nearby <strong>funded-network</strong> pharmacies (distinct from TCC unfunded pharmacies): the nearest 20 per drug entry within the search radius (default 30 miles, max 100). The funded network includes chains that are not part of TCC, such as Walgreens.</span>
@@ -200,6 +208,11 @@
               <td class="field-name">pharmacies</td>
               <td><span class="field-type">Pharmacy[] | omitted</span></td>
               <td>Nearby funded-network pharmacies. Present only when <code class="inline-code">address</code> is provided to a search endpoint. The nearest 20 within the search radius, sorted by ascending distance. See <a href="tcc.html#schema-pharmacy">Pharmacy schema</a>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">requested_quantity_pricing</td>
+              <td><span class="field-type">object | omitted</span></td>
+              <td>Only present when <code class="inline-code">units</code> or <code class="inline-code">packs</code> is passed to a search endpoint and the amount is valid for this product. Fields: <code class="inline-code">units</code> (number), <code class="inline-code">price</code> (number, <code class="inline-code">units × price_per_unit</code>), <code class="inline-code">price_w_dispensing</code> (number, <code class="inline-code">price + pharmacy_dispensing_fee</code> — <strong>no admin fee</strong>). See <a href="index.html#custom-quantity">Custom Quantity Pricing</a>.</td>
             </tr>
           </tbody>
         </table>

@@ -38,6 +38,7 @@
         <a href="#channels">Channels</a>
         <a href="#exclude-fields">Exclude Fields</a>
         <a href="#treatment-category-filter">Treatment Category Filter</a>
+        <a href="#custom-quantity">Custom Quantity Pricing</a>
       </nav>
     </div>
     <div class="sidebar-section">
@@ -52,6 +53,7 @@
       <nav>
         <a href="#schema-pricelistentry">PriceListEntry</a>
         <a href="#schema-sampleprice">SamplePricing</a>
+        <a href="#schema-requestedquantity">RequestedQuantity</a>
       </nav>
     </div>
     <div class="sidebar-section">
@@ -87,6 +89,7 @@
           <li>Search by NDC (with or without generic substitutions), GPI, or drug name</li>
           <li>Locate nearby TCC or CPDAPN pharmacies given a patient address</li>
           <li>Fetch a single entry by <code class="inline-code">external_sku</code></li>
+          <li>Price a specific quantity (e.g. 45 tablets or 3 inhalers) instead of the default sample pack sizes</li>
         </ul>
       </section>
 
@@ -189,6 +192,57 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
         </div>
       </section>
 
+      <!-- Custom Quantity Pricing -->
+      <section class="doc-section" id="custom-quantity">
+        <h2>Custom Quantity Pricing</h2>
+        <p>By default, entries are priced at the 1×, 2×, and 3× sample pack sizes in <code class="inline-code">sample_pricing</code>. To price a specific amount, pass <code class="inline-code">units</code> or <code class="inline-code">packs</code> to any search endpoint (<code class="inline-code">/pricelist/search</code>, <code class="inline-code">/pricelist/cpd/search</code>, <code class="inline-code">/pricelist/tcc/search</code>, <code class="inline-code">/pricelist/cpdapn/search</code>, including lookups by <code class="inline-code">external_sku</code>).</p>
+        <table class="param-table">
+          <tbody>
+            <tr>
+              <td>
+                <span class="param-name">units</span>
+                <span class="param-type">number · optional</span>
+              </td>
+              <td class="param-desc">
+                Amount to price, in the entry's <code class="inline-code">unit</code> (e.g. tablets, mL).
+                <ul>
+                  <li><strong>Splittable</strong> (<code class="inline-code">splittable=true</code>): any positive whole number.</li>
+                  <li><strong>Non-splittable</strong> (<code class="inline-code">splittable=false</code>): must be a multiple of <code class="inline-code">pack_size</code>, since only whole packages can be dispensed.</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">packs</span>
+                <span class="param-type">integer · optional</span>
+              </td>
+              <td class="param-desc">
+                Non-splittable products only. Number of whole packages to price; equivalent to <code class="inline-code">units = packs × pack_size</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p>When either is provided, each entry gains a <a href="#schema-requestedquantity"><code class="inline-code">requested_quantity</code></a> object, and each channel on the entry gains a <code class="inline-code">requested_quantity_pricing</code> object with the price for that amount (see the <a href="cpd.html#schema-cpd-channel">CPD</a>, <a href="tcc.html#schema-tcc-channel">TCC</a>, and <a href="cpdapn.html#schema-cpdapn-channel">CPDAPN</a> channel schemas). When an <code class="inline-code">address</code> is also given, each nearby pharmacy includes <code class="inline-code">requested_quantity_price_w_dispensing</code>.</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">examples</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><span class="tok-cmd"># 45 tablets of a splittable product</span>
+/pricelist/search?ndc=67877-0511-10&amp;units=45
+
+<span class="tok-cmd"># 3 packages of a non-splittable product (e.g. 3 × 2.5 mL bottles)</span>
+/pricelist/cpd/search?term=latanoprost&amp;packs=3
+
+<span class="tok-cmd"># The same amount expressed in units (must be a multiple of pack_size)</span>
+/pricelist/cpd/search?term=latanoprost&amp;units=7.5</pre>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <span>A search can return both splittable and non-splittable products, so an amount that doesn't fit a particular product is reported on that entry rather than failing the request: <code class="inline-code">requested_quantity.error</code> explains why (and, for non-splittable products, lists the nearest valid amounts), and no <code class="inline-code">requested_quantity_pricing</code> is added for that entry. Malformed values (non-positive, non-numeric, a fractional <code class="inline-code">packs</code>, or both <code class="inline-code">units</code> and <code class="inline-code">packs</code>) return <code class="inline-code">400</code>.</span>
+        </div>
+      </section>
+
       <!-- Endpoint: /pricelist/all -->
       <section class="doc-section" id="endpoint-all">
         <h2>GET /pricelist/all</h2>
@@ -260,7 +314,7 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
                 <span class="param-type">boolean · optional</span>
               </td>
               <td class="param-desc">
-                When <code class="inline-code">true</code>, enforces exact-NDC match. Requires <code class="inline-code">ndc</code>; returns <code class="inline-code">400</code> if omitted.
+                When <code class="inline-code">true</code>, enforces exact-NDC match. Requires <code class="inline-code">ndc</code>; returns <code class="inline-code">400</code> if omitted. Only <code class="inline-code">true</code> or <code class="inline-code">1</code> turn it on; any other value (including <code class="inline-code">false</code>) is treated as false. Matches NDCs on either the CPD or TCC price list and returns an empty array if the NDC is on neither.
               </td>
             </tr>
             <tr>
@@ -278,7 +332,7 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
                 <span class="param-type">string · optional*</span>
               </td>
               <td class="param-desc">
-                Partial match across <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+                Partial match across <code class="inline-code">medication_name</code> and <code class="inline-code">brand_name</code>. Case-insensitive; spaces are ignored. If nothing contains the term, close misspellings are returned instead (terms of 4+ characters, e.g. <code class="inline-code">brilinita</code> finds Brilinta), flagged with <code class="inline-code">fuzzy_match</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
               </td>
             </tr>
             <tr>
@@ -287,7 +341,7 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
                 <span class="param-type">string · optional</span>
               </td>
               <td class="param-desc">
-                Dosage strength (e.g., <code class="inline-code">10mg</code>). Requires <code class="inline-code">term</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
+                Dosage strength (e.g., <code class="inline-code">10mg</code>). Case- and space-insensitive, so <code class="inline-code">10mg</code> and <code class="inline-code">10 mg</code> are equivalent. Requires <code class="inline-code">term</code>. Ignored if <code class="inline-code">ndc</code> or <code class="inline-code">gpi</code> is provided.
               </td>
             </tr>
             <tr>
@@ -324,6 +378,24 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
               </td>
               <td class="param-desc">
                 Filter results to entries whose <code class="inline-code">treatment_categories</code> array contains at least one match. Comma-separated for multiple categories (matched with OR logic). Case-insensitive.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">units</span>
+                <span class="param-type">number · optional</span>
+              </td>
+              <td class="param-desc">
+                Price each result at this many units. Any whole number for splittable products; a multiple of <code class="inline-code">pack_size</code> for non-splittable products. Cannot be combined with <code class="inline-code">packs</code>. See <a href="#custom-quantity">Custom Quantity Pricing</a>.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="param-name">packs</span>
+                <span class="param-type">integer · optional</span>
+              </td>
+              <td class="param-desc">
+                Non-splittable products only: price each result at this many whole packages. Cannot be combined with <code class="inline-code">units</code>. See <a href="#custom-quantity">Custom Quantity Pricing</a>.
               </td>
             </tr>
             <tr>
@@ -373,6 +445,14 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
   --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
         </div>
 
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Price a custom quantity (45 tablets)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -s "https://api.costplusdrugs.com/pricelist/search?ndc=67877-0511-10&amp;units=45"</pre>
+        </div>
+
         <h3>Error Responses</h3>
         <div class="response-tag error">400 Bad Request</div>
         <div class="code-block">
@@ -391,6 +471,15 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
           </div>
           <pre>{
   <span class="tok-key">"error"</span>: <span class="tok-str">"search parameters must be added to the query string"</span>
+}</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON — invalid units / packs</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>{
+  <span class="tok-key">"error"</span>: <span class="tok-str">"provide only one of units or packs"</span>
 }</pre>
         </div>
       </section>
@@ -530,6 +619,24 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
               <td><span class="badge-no">No</span></td>
               <td>CPDAPN (funded) pricing. See <a href="cpdapn.html#schema-cpdapn-channel">CPDAPN channel schema</a>.</td>
             </tr>
+            <tr>
+              <td class="field-name">requested_quantity</td>
+              <td><span class="field-type">object | omitted</span></td>
+              <td><span class="badge-cond">Conditional</span></td>
+              <td>Only present when <code class="inline-code">units</code> or <code class="inline-code">packs</code> is passed to a search endpoint. See <a href="#schema-requestedquantity">RequestedQuantity</a>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">fuzzy_match</td>
+              <td><span class="field-type">boolean | omitted</span></td>
+              <td><span class="badge-cond">Conditional</span></td>
+              <td><code class="inline-code">true</code> when a <code class="inline-code">term</code> search found no exact match and this entry was returned as a close misspelling. Omitted on exact matches.</td>
+            </tr>
+            <tr>
+              <td class="field-name">fuzzy_matched_name</td>
+              <td><span class="field-type">string | omitted</span></td>
+              <td><span class="badge-cond">Conditional</span></td>
+              <td>Present with <code class="inline-code">fuzzy_match</code>: the <code class="inline-code">medication_name</code> or <code class="inline-code">brand_name</code> the term was matched to.</td>
+            </tr>
           </tbody>
         </table>
       </section>
@@ -563,6 +670,52 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
         </table>
       </section>
 
+      <!-- Schema: RequestedQuantity -->
+      <section class="doc-section" id="schema-requestedquantity">
+        <h2>Schema: RequestedQuantity</h2>
+        <p>Returned as <code class="inline-code">requested_quantity</code> on each entry when <code class="inline-code">units</code> or <code class="inline-code">packs</code> is passed. See <a href="#custom-quantity">Custom Quantity Pricing</a>.</p>
+        <table class="schema-table">
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="field-name">units</td>
+              <td><span class="field-type">number | null</span></td>
+              <td>The amount priced, in <code class="inline-code">unit</code>. When <code class="inline-code">packs</code> was passed for a non-splittable product, this is <code class="inline-code">packs × pack_size</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">packs</td>
+              <td><span class="field-type">integer | null</span></td>
+              <td>Number of whole packages for non-splittable products; <code class="inline-code">null</code> for splittable products.</td>
+            </tr>
+            <tr>
+              <td class="field-name">unit</td>
+              <td><span class="field-type">string</span></td>
+              <td>Unit of measure, same as the entry's <code class="inline-code">unit</code>.</td>
+            </tr>
+            <tr>
+              <td class="field-name">error</td>
+              <td><span class="field-type">string | omitted</span></td>
+              <td>Present only when the amount isn't valid for this product (e.g. a fractional amount for a splittable product, a non-multiple of <code class="inline-code">pack_size</code> for a non-splittable product, or <code class="inline-code">packs</code> on a splittable product). When present, no <code class="inline-code">requested_quantity_pricing</code> is added to the channels.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">JSON — valid</span><button class="copy-btn">Copy</button></div>
+          <pre><span class="tok-key">"requested_quantity"</span>: { <span class="tok-key">"units"</span>: <span class="tok-num">45</span>, <span class="tok-key">"packs"</span>: <span class="tok-null">null</span>, <span class="tok-key">"unit"</span>: <span class="tok-str">"ea"</span> }</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">JSON — not a multiple of pack_size</span><button class="copy-btn">Copy</button></div>
+          <pre><span class="tok-key">"requested_quantity"</span>: {
+  <span class="tok-key">"units"</span>: <span class="tok-num">6</span>,
+  <span class="tok-key">"packs"</span>: <span class="tok-null">null</span>,
+  <span class="tok-key">"unit"</span>: <span class="tok-str">"mL"</span>,
+  <span class="tok-key">"error"</span>: <span class="tok-str">"product is not splittable; units must be a multiple of the package size (2.5 mL). Nearest valid amounts: 5 or 7.5"</span>
+}</pre>
+        </div>
+      </section>
+
       <!-- Additional Endpoints -->
       <section class="doc-section" id="additional-endpoints">
         <h2>Additional Endpoints</h2>
@@ -576,7 +729,7 @@ treatment_category=High%20Cholesterol,Diabetes</pre>
 GET /pricelist/tcc/search?term=atorvastatin
 GET /pricelist/cpdapn/search?ndc=67877-0511-10</pre>
         </div>
-        <p>Accept the same query parameters as <code class="inline-code">/pricelist/search</code> (<code class="inline-code">ndc</code>, <code class="inline-code">term</code>, <code class="inline-code">gpi</code>, <code class="inline-code">strength</code>, <code class="inline-code">no_substitutions</code>, <code class="inline-code">address</code>, <code class="inline-code">distance</code>, <code class="inline-code">treatment_category</code>, <code class="inline-code">exclude_fields</code>). The TCC and CPDAPN scoped search endpoints also support the <code class="inline-code">address</code> parameter for pharmacy lookup.</p>
+        <p>Accept the same query parameters as <code class="inline-code">/pricelist/search</code> (<code class="inline-code">ndc</code>, <code class="inline-code">term</code>, <code class="inline-code">gpi</code>, <code class="inline-code">strength</code>, <code class="inline-code">no_substitutions</code>, <code class="inline-code">address</code>, <code class="inline-code">distance</code>, <code class="inline-code">treatment_category</code>, <code class="inline-code">units</code>, <code class="inline-code">packs</code>, <code class="inline-code">exclude_fields</code>). The TCC and CPDAPN scoped search endpoints also support the <code class="inline-code">address</code> parameter for pharmacy lookup.</p>
 
         <h3>GET /pricelist/treatment-categories</h3>
         <p>Returns the distinct list of <code class="inline-code">treatment_categories</code> values present across the price list, sorted alphabetically. Use this to discover valid values for the <a href="#treatment-category-filter"><code class="inline-code">treatment_category</code> filter</a>.</p>
@@ -650,7 +803,8 @@ GET /pricelist/cpdapn/search?ndc=67877-0511-10</pre>
           <li><strong>CPD:</strong> <code class="inline-code">sample_pack_price_w_shipping_dispensing = sample_pack_price + shipping_cost + dispensing_fee</code></li>
           <li><strong>TCC:</strong> <code class="inline-code">sample_pack_price_w_dispensing = sample_pack_price + pharmacy_dispensing_fee + admin_fee</code></li>
           <li><strong>CPDAPN:</strong> <code class="inline-code">sample_pack_price_w_dispensing = sample_pack_price + pharmacy_dispensing_fee</code> (no admin fee)</li>
-          <li>Some pharmacy chains have chain-specific dispensing fees. Always use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> for patient-facing totals.</li>
+          <li>Some pharmacy chains have chain-specific dispensing fees. Always use <code class="inline-code">pharmacies[].sample_pack_price_w_dispensing</code> (or <code class="inline-code">pharmacies[].requested_quantity_price_w_dispensing</code> for a custom quantity) for patient-facing totals.</li>
+          <li><strong>Custom quantities:</strong> splittable products can be priced at any whole number of <code class="inline-code">units</code>; non-splittable products only in whole packages, so <code class="inline-code">units</code> must be a multiple of <code class="inline-code">pack_size</code> (or pass <code class="inline-code">packs</code>). Pricing uses the same <code class="inline-code">price_per_unit</code>, fees, and formulas as the sample pack fields.</li>
         </ul>
       </section>
 

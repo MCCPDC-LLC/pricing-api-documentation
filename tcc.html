@@ -158,6 +158,18 @@
   -d ndc=67877-0511-10 \
   --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
         </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">cURL — Custom quantity (45 tablets) with pharmacies</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre>curl -sG https://api.costplusdrugs.com/pricelist/tcc/search \
+  -d ndc=67877-0511-10 \
+  -d units=45 \
+  --data-urlencode "address=233 S Wacker Dr, Chicago, IL 60606"</pre>
+        </div>
+        <p>Also accepts <code class="inline-code">units</code> or <code class="inline-code">packs</code> to price a specific amount; see <a href="index.html#custom-quantity">Custom Quantity Pricing</a>.</p>
       </section>
 
       <!-- Schema: TCC Channel -->
@@ -204,6 +216,11 @@
               <td class="field-name">pharmacies</td>
               <td><span class="field-type">Pharmacy[] | omitted</span></td>
               <td>Nearby TCC network pharmacies. <strong>Only present when <code class="inline-code">address</code> is provided.</strong> The nearest 20 within the search radius, sorted by ascending distance. Pharmacies outside the TCC network, or that exclude this specific TCC product, are filtered out before the 20 are selected.</td>
+            </tr>
+            <tr>
+              <td class="field-name">requested_quantity_pricing</td>
+              <td><span class="field-type">object | omitted</span></td>
+              <td>Only present when <code class="inline-code">units</code> or <code class="inline-code">packs</code> is passed to a search endpoint and the amount is valid for this product. Fields: <code class="inline-code">units</code> (number), <code class="inline-code">price</code> (number, <code class="inline-code">units × price_per_unit</code>), <code class="inline-code">price_w_dispensing</code> (number, <code class="inline-code">price + pharmacy_dispensing_fee + admin_fee</code>). See <a href="index.html#custom-quantity">Custom Quantity Pricing</a>.</td>
             </tr>
           </tbody>
         </table>
@@ -260,6 +277,12 @@
               <td><span class="field-type">number</span></td>
               <td><span class="badge-yes">Yes</span></td>
               <td>Total cost at this specific pharmacy using its own dispensing fee. Always use this field for patient-facing price display.</td>
+            </tr>
+            <tr>
+              <td class="field-name">requested_quantity_price_w_dispensing</td>
+              <td><span class="field-type">number</span></td>
+              <td><span class="badge-cond">Conditional</span></td>
+              <td>Same as <code class="inline-code">sample_pack_price_w_dispensing</code>, but for the amount requested with <code class="inline-code">units</code> or <code class="inline-code">packs</code>. Only present when one was passed and is valid for the product. Includes the admin fee on TCC; never on CPDAPN.</td>
             </tr>
             <tr>
               <td class="field-name">address_obj</td>

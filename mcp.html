@@ -170,6 +170,7 @@
             <tr><td class="field-name">pricelist_treatment_categories</td><td>Lists the treatment/condition categories available, for mapping a health condition (e.g. &ldquo;scabies&rdquo;) to a searchable category.</td></tr>
           </tbody>
         </table>
+        <p>The <code class="inline-code">search</code> tool and all <code class="inline-code">pricelist_*_search</code> tools accept optional <code class="inline-code">units</code> or <code class="inline-code">packs</code> to price a specific amount instead of the default pack size: any whole number of units for splittable products, or whole packages for non-splittable ones. Each result's <code class="inline-code">bottom_line</code> then reflects that amount. See <a href="index.html#custom-quantity">Custom Quantity Pricing</a>.</p>
       </section>
 
       <!-- Tools: Order Estimation -->
@@ -185,6 +186,25 @@
             <tr><td class="field-name">order_estimate_compare</td><td>Prices the same prescriptions under both DTC and TCC and reports which channel is cheaper overall, with the dollar savings.</td></tr>
           </tbody>
         </table>
+        <h3>Prescription quantities</h3>
+        <p>Each item in an order can specify how much to fill. Use at most one of these per item:</p>
+        <table class="param-table">
+          <tbody>
+            <tr>
+              <td><span class="param-name">fill_size</span><span class="param-type">1 | 2 | 3 · optional</span></td>
+              <td class="param-desc">DTC only. 1×, 2×, or 3× the default pack size (e.g. 30/60/90 tablets). Defaults to 1.</td>
+            </tr>
+            <tr>
+              <td><span class="param-name">units</span><span class="param-type">number · optional</span></td>
+              <td class="param-desc">A custom amount, e.g. 45 tablets or 10 mL. Any whole number for splittable products; a multiple of <code class="inline-code">pack_size</code> for non-splittable products.</td>
+            </tr>
+            <tr>
+              <td><span class="param-name">packs</span><span class="param-type">integer · optional</span></td>
+              <td class="param-desc">Non-splittable products only: the number of whole packages.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>If an amount doesn't fit a product (for example, 6 mL of a drug that only comes in 2.5 mL bottles), the tool returns an error that lists the nearest valid amounts. With <code class="inline-code">autorefill</code>, a custom amount is treated as the 30-day supply, and the 90-day comparison uses 3× that amount.</p>
       </section>
 
       <!-- Tools: Pharmacy Locator -->
@@ -207,6 +227,10 @@
             <p class="qa-said">Prices each at its 90-day fill, adds shipping once for the whole order, and compares that against refilling monthly one at a time.</p>
           </div>
           <div class="qa-turn">
+            <p class="qa-ask">My prescription is for 45 tablets of atorvastatin 20mg. What will that cost delivered?</p>
+            <p class="qa-said">Prices exactly 45 tablets rather than the nearest 30/60/90 pack, then adds dispensing and shipping.</p>
+          </div>
+          <div class="qa-turn">
             <p class="qa-ask">What does it cost to treat scabies at Cost Plus?</p>
             <p class="qa-said">Maps &ldquo;scabies&rdquo; to CPD's Anti-Parasitic category and lists the options with delivered prices.</p>
           </div>
@@ -227,6 +251,7 @@
               <li>What a medication costs delivered to your door</li>
               <li>What you save with a 90-day autorefill fill</li>
               <li>The total for several prescriptions in one order</li>
+              <li>The price for the exact quantity on a prescription</li>
               <li>Pickup prices at TCC pharmacies near you</li>
               <li>CPD's own condition/treatment categories</li>
             </ul>
